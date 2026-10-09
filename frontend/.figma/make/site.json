@@ -1,0 +1,10 @@
+{
+  "description": "This web application offers personalized product recommendations for pet owners using advanced language models, enhancing shopping experiences in online pet stores.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

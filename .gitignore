@@ -1,0 +1,41 @@
+# Python environments, bytecode, and local test/cache output
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+.mypy_cache/
+.ruff_cache/
+.cache/
+coverage.xml
+htmlcov/
+experiments/results/*.csv
+
+# Local configuration and secrets; keep example templates
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Frontend build and dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/*.tsbuildinfo
+
+# Research inputs/outputs may be large or licensed separately
+data/raw/**
+data/processed/**
+*.parquet
+*.npy
+*.npz
+
+# Local database, logs, and OS/editor files
+*.db
+*.sqlite
+*.log
+logs/
+Thumbs.db
+Desktop.ini

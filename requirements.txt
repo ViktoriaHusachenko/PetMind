@@ -1,0 +1,15 @@
+pandas
+numpy
+scipy
+scikit-learn
+sentence-transformers
+rapidfuzz
+pydantic
+pytest
+matplotlib
+python-dotenv
+openai
+anthropic
+requests
+PyYAML
+pyarrow

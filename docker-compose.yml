@@ -1,0 +1,71 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-petly}
+      POSTGRES_USER: ${POSTGRES_USER:-petly}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-petly}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - petly_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-petly} -d ${POSTGRES_DB:-petly}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 5s
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-petly}:${POSTGRES_PASSWORD:-petly}@db:5432/${POSTGRES_DB:-petly}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
+      LLM_CACHE_PATH: ${LLM_CACHE_PATH:-/app/.cache/petrec_llm_cache.json}
+      PETMIND_AUTH_SECRET: ${PETMIND_AUTH_SECRET:-petmind-docker-development-secret}
+      PETMIND_ADMIN_EMAIL: ${PETMIND_ADMIN_EMAIL:-admin@petmind.local}
+      PETMIND_ADMIN_PASSWORD: ${PETMIND_ADMIN_PASSWORD:-PetMindAdmin2026!}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data:ro
+      - petly_llm_cache:/app/.cache
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  petly_pgdata:
+  petly_llm_cache:
