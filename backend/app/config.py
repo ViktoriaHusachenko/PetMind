@@ -76,7 +76,7 @@ class Settings(BaseModel):
     admin_password: str = "PetMindAdmin2026!"
     demo_password: str = "PetMindDemo2026!"
     cors_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
-    recommendation_ttl_seconds: int = 60
+    recommendation_ttl_seconds: int = 600
     llm: LLMSettings = LLMSettings()
 
     @classmethod
@@ -116,7 +116,7 @@ class Settings(BaseModel):
             demo_password=env.get("PETMIND_DEMO_PASSWORD") or "PetMindDemo2026!",
             cors_origins=tuple(o.strip() for o in (env.get("PETMIND_CORS_ORIGINS") or "").split(",") if o.strip())
             or cls.model_fields["cors_origins"].default,
-            recommendation_ttl_seconds=_int(env, "RECOMMENDATION_TTL_SECONDS", 60),
+            recommendation_ttl_seconds=_int(env, "RECOMMENDATION_TTL_SECONDS", 600),
             llm=llm,
         )
 

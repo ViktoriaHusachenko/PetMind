@@ -23,11 +23,11 @@ from sqlalchemy.orm import Session, sessionmaker
 from petrec.feedback import update_preference_state
 from petrec.llm import LLMClient
 from petrec.pipeline import RecommendationPipeline
-from petrec.profiles import ProductEmbedder
-from petrec.rag import Embedder, RAGIndex, SearchResult, VectorStore, search_pg_chunks
+from petrec.rag import RAGIndex, SearchResult, VectorStore, search_pg_chunks
 
 from .auth import TokenAuthMixin
 from .config import get_settings
+from .embeddings import EmbeddingService
 from .llm import LLMClientFactory, LLMRuntime
 from .safety import SafetyDecision, default_evaluator
 from .search import SearchQuery, rank
@@ -99,8 +99,9 @@ class APIService(TokenAuthMixin):
     """CRUD/query service with short-lived recommendation and pipeline caches."""
 
     def __init__(self, session_factory: sessionmaker = SessionLocal, llm_client: LLMClient | None = None,
-                 llm_runtime: LLMRuntime | None = None):
+                 llm_runtime: LLMRuntime | None = None, embeddings: EmbeddingService | None = None):
         self.session_factory = session_factory
+        self.embeddings = embeddings or EmbeddingService()
         if llm_runtime is None:
             llm_runtime = (LLMRuntime.from_client(llm_client) if llm_client is not None
                            else LLMClientFactory(get_settings().llm).build_runtime())
@@ -111,7 +112,6 @@ class APIService(TokenAuthMixin):
         self._pipeline_cache: dict[tuple[str, str], tuple[float, RecommendationPipeline]] = {}
         self._recommendation_cache: dict[tuple[str, str, int, bool], tuple[float, list[dict[str, Any]]]] = {}
         self._cache_lock = threading.RLock()
-        self._model_embedder: Embedder | None = None
 
     def llm_status(self) -> dict[str, Any]:
         return self.llm_runtime.status()
@@ -418,6 +418,7 @@ class APIService(TokenAuthMixin):
         user = session.get(User, user_id)
         purchases = session.scalars(select(Purchase).where(Purchase.user_id == user_id).order_by(Purchase.ts)).all()
         products_db = session.scalars(select(Product)).all()
+        self._timed("embedding_backfill", self.embeddings.ensure_product_vectors, session, products_db)
         evaluator = default_evaluator()
         product_rows = []
         item_vectors = {}
@@ -442,10 +443,10 @@ class APIService(TokenAuthMixin):
             "preference_state": user.preference_state if user else {}}])
         products_frame = pd.DataFrame(product_rows)
         bound_engine = self.session_factory.kw.get("bind", engine)
-        rag_index = RAGIndex(store=_DatabaseKBStore(bound_engine), embedder=Embedder())
+        rag_index = RAGIndex(store=_DatabaseKBStore(bound_engine), embedder=self.embeddings.rag_embedder())
         pipeline = self._timed("pipeline_build", RecommendationPipeline, interactions, products_frame,
             profile, llm_client=self.rerank_client, item_embeddings=item_vectors, rag_index=rag_index,
-            build_rag_index=False)
+            build_rag_index=False, product_embedder=self.embeddings.product_embedder)
         self._pipeline_cache[key] = (now + get_settings().recommendation_ttl_seconds, pipeline)
         return pipeline
 
@@ -668,7 +669,17 @@ class APIService(TokenAuthMixin):
             logger.info("step=reminder_refresh reminders=%d", created)
             return created
 
+    def warm_up(self) -> None:
+        """Load the embedding model and back-fill product vectors so the first request is fast."""
+        self.embeddings.warm_up()
+        try:
+            with self.session_factory() as session:
+                self.embeddings.ensure_product_vectors(session, session.scalars(select(Product)).all())
+        except Exception:
+            logger.exception("Product embedding back-fill failed; it will be retried on demand")
+
     def start_scheduler(self):
+        threading.Thread(target=self.warm_up, name="petmind-warm-up", daemon=True).start()
         scheduler = BackgroundScheduler(timezone="UTC")
         try:
             self._timed("reminder_initial_refresh", self.refresh_reminders)
@@ -678,6 +689,14 @@ class APIService(TokenAuthMixin):
                           id="daily_petmind_reminders", replace_existing=True)
         scheduler.start()
         return scheduler
+
+
+def _with_item_id(result: SearchResult) -> SearchResult:
+    """pgvector rows carry `product_id`; the core pipeline attaches passages by `item_id` (BUG-026)."""
+    metadata = dict(result.metadata or {})
+    if "item_id" not in metadata and metadata.get("product_id") is not None:
+        metadata["item_id"] = metadata["product_id"]
+    return SearchResult(result.id, result.text, result.score, metadata)
 
 
 class _DatabaseKBStore(VectorStore):
@@ -695,6 +714,6 @@ class _DatabaseKBStore(VectorStore):
             started = time.perf_counter()
             results = search_pg_chunks(raw, query_embedding, top_m)
             logger.info("step=rag_retrieval latency_ms=%.1f", (time.perf_counter() - started) * 1000)
-            return results
+            return [_with_item_id(result) for result in results]
         finally:
             raw.close()
