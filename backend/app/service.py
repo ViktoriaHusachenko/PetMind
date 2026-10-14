@@ -28,12 +28,12 @@ from petrec.profiles import ProductEmbedder
 from petrec.rag import Embedder, RAGIndex, SearchResult, VectorStore, search_pg_chunks
 
 from .auth import TokenAuthMixin
+from .config import get_settings
 from .db.database import SessionLocal, engine
 from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase, Reminder, User
 
 logger = logging.getLogger("petly.api")
 PAGE_SIZE = 24
-RECOMMENDATION_TTL_SECONDS = 60
 
 
 def _uid(value: str | uuid.UUID) -> uuid.UUID:
@@ -95,18 +95,18 @@ class APIService(TokenAuthMixin):
 
     @staticmethod
     def _make_llm_client() -> LLMClient | None:
-        provider = os.getenv("LLM_PROVIDER", "openai").lower()
-        model = os.getenv("LLM_MODEL") or None
-        cache_path = os.getenv("LLM_CACHE_PATH", ".cache/petrec_llm_cache.json")
+        llm = get_settings().llm
+        model = llm.chat_model
         try:
-            if provider == "anthropic":
-                return AnthropicClient(model=model or "claude-3-5-haiku-latest", cache_path=cache_path)
-            if provider == "ollama":
-                return OllamaClient(model=model or os.getenv("OLLAMA_MODEL", "llama3.1"), cache_path=cache_path)
-            if provider == "openai":
-                return OpenAIClient(model=model or "gpt-4o-mini", cache_path=cache_path)
+            if llm.provider == "anthropic":
+                return AnthropicClient(model=model or "claude-3-5-haiku-latest", api_key=llm.anthropic_api_key,
+                                       cache_path=llm.cache_path)
+            if llm.provider == "ollama":
+                return OllamaClient(model=model or llm.ollama_model, host=llm.ollama_host, cache_path=llm.cache_path)
+            if llm.provider == "openai":
+                return OpenAIClient(model=model or "gpt-4o-mini", api_key=llm.openai_api_key, cache_path=llm.cache_path)
         except ValueError:
-            logger.info("LLM provider %s is not configured; recommendations will use fallback scoring", provider)
+            logger.warning("LLM provider %s is not configured; recommendations will use fallback scoring", llm.provider)
         return None
 
     def _timed(self, step: str, function, *args, **kwargs):
@@ -415,7 +415,7 @@ class APIService(TokenAuthMixin):
         pipeline = self._timed("pipeline_build", RecommendationPipeline, interactions, products_frame,
             profile, llm_client=self.llm_client, item_embeddings=item_vectors, rag_index=rag_index,
             build_rag_index=False)
-        self._pipeline_cache[key] = (now + RECOMMENDATION_TTL_SECONDS, pipeline)
+        self._pipeline_cache[key] = (now + get_settings().recommendation_ttl_seconds, pipeline)
         return pipeline
 
     @staticmethod
@@ -451,7 +451,7 @@ class APIService(TokenAuthMixin):
             logger.info("step=recommendation_pipeline latency_ms=%.1f", (time.perf_counter() - started) * 1000)
         output = [item.model_dump(mode="json") if hasattr(item, "model_dump") else item.dict() for item in results[:k]]
         with self._cache_lock:
-            self._recommendation_cache[cache_key] = (time.monotonic() + RECOMMENDATION_TTL_SECONDS, output)
+            self._recommendation_cache[cache_key] = (time.monotonic() + get_settings().recommendation_ttl_seconds, output)
         return output
 
     def list_reminders(self, user_id: str, pet_id: str) -> list[dict[str, Any]]:

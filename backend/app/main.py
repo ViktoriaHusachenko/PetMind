@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from .config import get_settings
 from .schemas import (
     AdminProductCreate, AdminProductUpdate, AuthResponse, ChatRequest, ChatResponse, EventCreate, EventOut, HealthOut, LoginRequest, PetCreate, PetOut, PetUpdate, ProductDetail,
     ProductListItem, ProductPage, PurchaseCreate, PurchaseOut, RecommendationItem, RegisterRequest, ReminderOut, StatsOut, UserOut,
@@ -36,7 +37,7 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
     app.state.service = service
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173"],
+        allow_origins=list(get_settings().cors_origins),
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-User-Id"],

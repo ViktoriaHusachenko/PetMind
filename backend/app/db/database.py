@@ -1,16 +1,13 @@
 """Database engine and session factory."""
 
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from ..config import get_settings
+
 
 def database_url() -> str:
-    value = os.getenv("DATABASE_URL", "postgresql+psycopg://petly:petly@localhost:5432/petly")
-    if value.startswith("postgresql://"):
-        value = value.replace("postgresql://", "postgresql+psycopg://", 1)
-    return value
+    return get_settings().database_url
 
 
 engine = create_engine(database_url(), pool_pre_ping=True)
