@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from fastapi.testclient import TestClient
 from petrec.llm import MockLLM
 from petrec.rerank import RecommendationItem
+from app.auth import TokenAuthMixin
 from app.main import create_app
 
 
@@ -23,7 +24,7 @@ PID = "3e2105a7-44c8-4ea2-9cac-1266fd90a150"
 PRODUCT = "B00TEST001"
 
 
-class FakeService:
+class FakeService(TokenAuthMixin):
     def __init__(self):
         self.llm = MockLLM("Підходить за складом і потребами.")
         self.created_event = None
@@ -31,6 +32,7 @@ class FakeService:
     def health(self): pass
     def list_users(self): return [{"id": UID, "external_id": "demo", "display_name": "Демо"}]
     def get_user(self, user_id): return self.list_users()[0] if user_id == UID else None
+    def get_pet(self, pet_id): return self.list_pets(UID)[0] if pet_id == PID else None
     def list_pets(self, user_id): return [{"id": PID, "user_id": UID, "name": "Мурчик", "species": "cat", "birth_date": date(2020, 1, 1), "breed": None, "weight_kg": 4.5, "allergens": ["птиця"], "diet_restrictions": [], "lifestyle": "стерилізований", "photo_url": None}]
     def create_pet(self, user_id, payload): return {"id": PID, "user_id": user_id, **payload}
     def update_pet(self, pet_id, payload): return {**self.list_pets(UID)[0], **payload}
@@ -57,7 +59,16 @@ def client():
     service = FakeService()
     with TestClient(create_app(service, enable_scheduler=False)) as test_client:
         test_client.service = service
+        test_client.headers["Authorization"] = f"Bearer {service.issue_access_token(UID)}"
         yield test_client
+
+
+def test_private_routes_require_valid_token(client):
+    del client.headers["Authorization"]
+    assert client.get("/api/users").status_code == 401
+    assert client.get("/api/users", headers={"Authorization": "Bearer forged.token"}).status_code == 401
+    other = client.service.issue_access_token("2b0c7f2e-0000-4000-8000-000000000000")
+    assert client.get(f"/api/users/{UID}/pets", headers={"Authorization": f"Bearer {other}"}).status_code == 401
 
 
 def test_users_and_pet_questionnaire_routes(client):

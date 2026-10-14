@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from fastapi.testclient import TestClient
 from petrec.llm import MockLLM, ToolCall
 
+from app.auth import TokenAuthMixin
 from app.main import create_app
 from app.services.agent import PetlyAgent
 
@@ -17,7 +18,7 @@ USER, PET = "user-1", "pet-1"
 SAFE_ID, BAD_ID = "B00SAFE001", "B00BAD001"
 
 
-class AgentService:
+class AgentService(TokenAuthMixin):
     def __init__(self):
         self.safety_checks = []
 
@@ -25,6 +26,12 @@ class AgentService:
         if (user_id, pet_id) != (USER, PET):
             raise LookupError("Pet profile not found")
         return {"id": PET, "name": "Мурчик", "allergens": ["птиця"]}
+
+    def get_user(self, user_id):
+        return {"id": USER, "external_id": "demo", "display_name": "Демо"} if user_id == USER else None
+
+    def get_pet(self, pet_id):
+        return {"id": PET, "user_id": USER} if pet_id == PET else None
 
     def get_product_basic(self, product_id):
         products = {
@@ -96,6 +103,7 @@ def test_chat_route_and_treatment_guard():
 
     service = RouteService()
     with TestClient(create_app(service, enable_scheduler=False)) as client:
+        client.headers["Authorization"] = f"Bearer {service.issue_access_token(USER)}"
         response = client.post("/api/chat", json={"user_id": USER, "pet_id": PET,
             "messages": [{"role": "user", "content": "Як лікувати симптоми?"}]})
         assert response.status_code == 200

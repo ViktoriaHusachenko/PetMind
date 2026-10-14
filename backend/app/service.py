@@ -7,7 +7,6 @@ import os
 import base64
 import hashlib
 import hmac
-import json
 import secrets
 import threading
 import time
@@ -28,6 +27,7 @@ from petrec.pipeline import RecommendationPipeline
 from petrec.profiles import ProductEmbedder
 from petrec.rag import Embedder, RAGIndex, SearchResult, VectorStore, search_pg_chunks
 
+from .auth import TokenAuthMixin
 from .db.database import SessionLocal, engine
 from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase, Reminder, User
 
@@ -82,7 +82,7 @@ def _product_out(product: Product, pet: Pet | None = None) -> dict[str, Any]:
     return value
 
 
-class APIService:
+class APIService(TokenAuthMixin):
     """CRUD/query service with short-lived recommendation and pipeline caches."""
 
     def __init__(self, session_factory: sessionmaker = SessionLocal, llm_client: LLMClient | None = None):
@@ -142,29 +142,6 @@ class APIService:
             rows = session.scalars(select(User).where(User.is_admin.is_(False)).order_by(User.display_name, User.external_id)).all()
             return [_user_out(row) for row in rows]
 
-    @staticmethod
-    def issue_access_token(user_id: str) -> str:
-        payload = json.dumps({"sub": str(user_id), "exp": int(time.time()) + 60 * 60 * 24}, separators=(",", ":")).encode()
-        encoded = base64.urlsafe_b64encode(payload).rstrip(b"=").decode()
-        secret = os.getenv("PETMIND_AUTH_SECRET", "petmind-local-development-secret").encode()
-        signature = hmac.new(secret, encoded.encode(), hashlib.sha256).digest()
-        return f"{encoded}.{base64.urlsafe_b64encode(signature).rstrip(b'=').decode()}"
-
-    @staticmethod
-    def _verify_access_token(token: str) -> str:
-        try:
-            encoded, signature = token.split(".", 1)
-            secret = os.getenv("PETMIND_AUTH_SECRET", "petmind-local-development-secret").encode()
-            expected = hmac.new(secret, encoded.encode(), hashlib.sha256).digest()
-            actual = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
-            if not hmac.compare_digest(expected, actual):
-                raise ValueError("Invalid access token")
-            payload = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
-            if int(payload["exp"]) < int(time.time()):
-                raise ValueError("Access token expired")
-            return str(payload["sub"])
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-            raise ValueError("Потрібно увійти в обліковий запис адміністратора.") from exc
 
     @staticmethod
     def _password_hash(password: str, salt: bytes | None = None) -> str:
@@ -234,7 +211,10 @@ class APIService:
             return _product_out(product)
 
     def _require_admin(self, session: Session, token: str) -> User:
-        user_id = self._verify_access_token(token.removeprefix("Bearer ").strip())
+        try:
+            user_id = self._verify_access_token(token.removeprefix("Bearer ").strip())
+        except ValueError as exc:
+            raise ValueError("Потрібно увійти в обліковий запис адміністратора.") from exc
         user = session.get(User, _uid(user_id))
         if user is None or not user.is_admin:
             raise PermissionError("Для керування каталогом потрібен профіль адміністратора.")
