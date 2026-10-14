@@ -52,6 +52,9 @@ class AgentService(TokenAuthMixin):
     def list_products(self, **kwargs):
         return {"items": [self.get_product_basic(BAD_ID)], "total": 1}
 
+    def search_catalog(self, query, *, species, limit=10):
+        return [{**self.get_product_basic(BAD_ID), "score": 1.0}]
+
     def list_reminders(self, user_id, pet_id):
         return []
 

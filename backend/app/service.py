@@ -30,10 +30,11 @@ from .auth import TokenAuthMixin
 from .config import get_settings
 from .llm import LLMClientFactory, LLMRuntime
 from .safety import SafetyDecision, default_evaluator
+from .search import SearchQuery, rank
 from .db.database import SessionLocal, engine
 from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase, Reminder, User
 
-logger = logging.getLogger("petly.api")
+logger = logging.getLogger("petmind.api")
 PAGE_SIZE = 24
 
 
@@ -81,6 +82,11 @@ def _product_out(product: Product, pet: Pet | None = None) -> dict[str, Any]:
         value["safe"] = decision.safe
         value["danger_reason"] = decision.reason
     return value
+
+
+def _search_fields(product: Product) -> dict[str, str | None]:
+    return {"title": product.title, "brand": product.brand, "category": product.category,
+            "description": product.description, "ingredients_text": product.ingredients_text}
 
 
 def _safety(product: Product, pet: Pet) -> SafetyDecision:
@@ -262,8 +268,8 @@ class APIService(TokenAuthMixin):
             return {"product_id": product.id, "safe": decision.safe, "reason": decision.reason}
 
     def chat(self, user_id: str, pet_id: str, messages: list[dict[str, str]]) -> dict[str, Any]:
-        from .services.agent import PetlyAgent
-        return PetlyAgent(self, self.llm_client).run(user_id, pet_id, messages)
+        from .agent import PetMindAgent
+        return PetMindAgent(self, self.llm_client).run(user_id, pet_id, messages)
 
     def list_pets(self, user_id: str) -> list[dict[str, Any]]:
         key = _uid(user_id)
@@ -320,8 +326,7 @@ class APIService(TokenAuthMixin):
             stmt = stmt.where(Product.category.ilike(f"%{category}%"))
         if brand:
             stmt = stmt.where(Product.brand.ilike(f"%{brand}%"))
-        if q:
-            stmt = stmt.where(Product.title.ilike(f"%{q}%"))
+        query = SearchQuery.parse(q)
         ordering = {"price_asc": Product.price.asc(), "price_desc": Product.price.desc(),
                     "title": Product.title.asc(), "relevance": Product.title.asc()}
         if sort not in ordering:
@@ -330,11 +335,36 @@ class APIService(TokenAuthMixin):
         stmt = base_stmt.order_by(ordering[sort], Product.id).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE)
         with self.session_factory() as session:
             pet = self._pet_for_product_query(session, pet_id) if pet_id else None
+            if not query.empty:
+                # Token search ranks in Python; the catalog is small enough to score every row.
+                rows = session.scalars(base_stmt.order_by(ordering[sort], Product.id)).all()
+                by_id = {row.id: row for row in rows}
+                ranked = [by_id[row_id] for row_id, _ in rank(query, ((r.id, _search_fields(r)) for r in rows))]
+                if sort != "relevance":
+                    order = {row.id: index for index, row in enumerate(rows)}
+                    ranked.sort(key=lambda row: order[row.id])
+                window = ranked[(page - 1) * PAGE_SIZE: page * PAGE_SIZE]
+                return {"items": [_product_out(item, pet) for item in window], "total": len(ranked),
+                        "page": page, "page_size": PAGE_SIZE}
             total_stmt = select(func.count()).select_from(base_stmt.order_by(None).subquery())
             total = int(session.scalar(total_stmt) or 0)
             items = session.scalars(stmt).all()
             return {"items": [_product_out(item, pet) for item in items], "total": total,
                     "page": page, "page_size": PAGE_SIZE}
+
+    def search_catalog(self, query: str, *, species: str | None, limit: int = 10) -> list[dict[str, Any]]:
+        """Agent search: token-ranked products of one species, with a relevance score."""
+        parsed = SearchQuery.parse(query)
+        with self.session_factory() as session:
+            stmt = select(Product)
+            if species:
+                stmt = stmt.where(Product.species == species)
+            rows = session.scalars(stmt).all()
+            by_id = {row.id: row for row in rows}
+            if parsed.empty:
+                return [{**_product_out(row), "score": 0.0} for row in rows[:limit]]
+            return [{**_product_out(by_id[row_id]), "score": round(score, 3)}
+                    for row_id, score in rank(parsed, ((r.id, _search_fields(r)) for r in rows), limit)]
 
     @staticmethod
     def _pet_for_product_query(session: Session, pet_id: str) -> Pet:
@@ -645,7 +675,7 @@ class APIService(TokenAuthMixin):
         except Exception:
             logger.exception("Initial reminder refresh failed; daily refresh remains scheduled")
         scheduler.add_job(self.refresh_reminders, "cron", hour=9, minute=0,
-                          id="daily_petly_reminders", replace_existing=True)
+                          id="daily_petmind_reminders", replace_existing=True)
         scheduler.start()
         return scheduler
 

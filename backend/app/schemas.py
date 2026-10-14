@@ -145,7 +145,8 @@ class RecommendationItem(BaseModel):
     brand: str = ""
     price: float | None = None
     image_url: str | None = None
-    match_percent: int
+    # Deterministic s_final percent; null when a card did not come from the ranking pipeline.
+    match_percent: int | None = None
     reason: str
     safe_badge: bool
     composition_summary: list[str]
@@ -240,3 +241,5 @@ class ChatResponse(BaseModel):
     reply: str
     products: list[RecommendationItem]
     tool_trace: list[dict[str, Any]]
+    # llm: model-driven; fallback: deterministic simplified mode; guard: refused by a safety guard.
+    mode: Literal["llm", "fallback", "guard"] = "llm"

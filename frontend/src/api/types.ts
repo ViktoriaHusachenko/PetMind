@@ -58,7 +58,7 @@ export type RecommendationItem = {
   brand: string;
   price: number | null;
   image_url: string | null;
-  match_percent: number;
+  match_percent: number | null;
   reason: string;
   safe_badge: boolean;
   composition_summary: string[];
@@ -85,6 +85,7 @@ export type ChatResponse = {
   reply: string;
   products: RecommendationItem[];
   tool_trace: Array<Record<string, unknown>>;
+  mode: "llm" | "fallback" | "guard";
 };
 
 export type ProductPage = {
