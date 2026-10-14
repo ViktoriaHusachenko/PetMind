@@ -82,7 +82,7 @@ pattern,variant
 \bпохідн\w*,animal derivatives
 \b(?:meat|by-?products?)\b,meat meal
 \bм'яс\w*,meat meal
-\banimal\s+fat\b,animal fat
+\banimal\s+fats?\b,animal fat
 \bтваринн\w*\s+жир\w*,animal fat
 \bgelatin\w*,gelatin
 \bжелатин\w*,gelatin

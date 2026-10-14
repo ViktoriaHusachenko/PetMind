@@ -4,10 +4,6 @@ from __future__ import annotations
 
 import logging
 import os
-import base64
-import hashlib
-import hmac
-import secrets
 import threading
 import time
 import uuid
@@ -25,7 +21,7 @@ from petrec.llm import LLMClient
 from petrec.pipeline import RecommendationPipeline
 from petrec.rag import RAGIndex, SearchResult, VectorStore, search_pg_chunks
 
-from .auth import TokenAuthMixin
+from .auth import TokenAuthMixin, password_hasher
 from .config import get_settings
 from .embeddings import EmbeddingService
 from .llm import LLMClientFactory, LLMRuntime
@@ -152,21 +148,11 @@ class APIService(TokenAuthMixin):
 
     @staticmethod
     def _password_hash(password: str, salt: bytes | None = None) -> str:
-        salt = salt or secrets.token_bytes(16)
-        rounds = 310_000
-        digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, rounds)
-        return f"pbkdf2_sha256${rounds}${base64.urlsafe_b64encode(salt).decode()}${base64.urlsafe_b64encode(digest).decode()}"
+        return password_hasher.hash(password, salt)
 
-    @classmethod
-    def _password_matches(cls, password: str, encoded: str | None) -> bool:
-        try:
-            algorithm, rounds, salt, expected = encoded.split("$")
-            if algorithm != "pbkdf2_sha256":
-                return False
-            actual = cls._password_hash(password, base64.urlsafe_b64decode(salt + "==")).split("$")[-1]
-            return hmac.compare_digest(actual, expected)
-        except (AttributeError, ValueError):
-            return False
+    @staticmethod
+    def _password_matches(password: str, encoded: str | None) -> bool:
+        return password_hasher.verify(password, encoded)
 
     def register_user(self, email: str, password: str, display_name: str) -> dict[str, Any]:
         normalized_email = email.strip().casefold()

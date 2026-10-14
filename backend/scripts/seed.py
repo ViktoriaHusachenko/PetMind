@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import argparse
-import base64
-import hashlib
 import os
 import re
-import secrets
 import sys
 import uuid
 from datetime import date, datetime, timedelta, timezone
@@ -21,10 +18,16 @@ from sqlalchemy.dialects.postgresql import insert
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from app.auth import password_hasher
+from app.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import KBChunk, Pet, Product, ProductIngredient, Purchase, User
-from petrec.composition import ingredient_list, is_safe, load_dictionary, tokenize
+from app.embeddings import EmbeddingService
+from app.safety import default_evaluator
+from demo_catalog import demo_catalog
+from petrec.composition import load_dictionary, tokenize
 from petrec.profiles import ProductEmbedder
 from petrec.rag import Embedder, chunk_text
 
@@ -86,15 +89,15 @@ def _age_birth_date(years: int, today: date | None = None) -> date:
 def _demo_profiles() -> list[dict[str, Any]]:
     today = date.today()
     return [
-        {"external_id": "petly-demo-murchyk", "display_name": "Демо-користувач 1",
+        {"external_id": "petly-demo-murchyk", "display_name": "Демо-користувач 1", "email": "murchyk@petmind.local",
          "pet": {"name": "Мурчик", "species": "cat", "birth_date": _age_birth_date(6, today),
                  "breed": None, "weight_kg": 4.5, "allergens": ["птиця"],
                  "diet_restrictions": [], "lifestyle": "стерилізований", "photo_url": None}},
-        {"external_id": "petly-demo-richie", "display_name": "Демо-користувач 2",
+        {"external_id": "petly-demo-richie", "display_name": "Демо-користувач 2", "email": "richie@petmind.local",
          "pet": {"name": "Річі", "species": "dog", "birth_date": _age_birth_date(4, today),
                  "breed": "золотистий ретривер", "weight_kg": 31.0, "allergens": [],
                  "diet_restrictions": [], "lifestyle": None, "photo_url": None}},
-        {"external_id": "petly-demo-third", "display_name": "Демо-користувач 3",
+        {"external_id": "petly-demo-third", "display_name": "Демо-користувач 3", "email": "luna@petmind.local",
          "pet": {"name": "Луна", "species": "cat", "birth_date": _age_birth_date(2, today),
                  "breed": None, "weight_kg": 3.8, "allergens": [],
                  "diet_restrictions": [], "lifestyle": None, "photo_url": None}},
@@ -112,7 +115,12 @@ def _seed_demo_profiles() -> dict[str, int]:
             for demo in demos
         ])
         session.execute(users.on_conflict_do_nothing(index_elements=["external_id"]))
+        password_hash = password_hasher.hash(get_settings().demo_password)
         for demo in demos:
+            user = session.get(User, user_ids[demo["external_id"]])
+            # Demo owners can sign in (BUG-028); the password comes from PETMIND_DEMO_PASSWORD.
+            if user is not None:
+                user.email, user.password_hash = demo["email"], password_hash
             pet_id = uuid.uuid5(NAMESPACE, f"pet:{demo['external_id']}:{demo['pet']['name']}")
             pet = session.get(Pet, pet_id)
             if pet is None:
@@ -126,13 +134,9 @@ def _seed_demo_profiles() -> dict[str, int]:
 
 def _seed_admin_account() -> None:
     """Create the local demo administrator; override credentials through environment variables."""
-    email = os.getenv("PETMIND_ADMIN_EMAIL", "admin@petmind.local").strip().casefold()
-    password = os.getenv("PETMIND_ADMIN_PASSWORD", "PetMindAdmin2026!")
-    salt = secrets.token_bytes(16)
-    rounds = 310_000
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, rounds)
-    password_hash = (f"pbkdf2_sha256${rounds}${base64.urlsafe_b64encode(salt).decode()}$"
-                     f"{base64.urlsafe_b64encode(digest).decode()}")
+    settings = get_settings()
+    email = settings.admin_email
+    password_hash = password_hasher.hash(settings.admin_password)
     with SessionLocal() as session:
         user = session.query(User).filter_by(email=email).one_or_none()
         if user is None:
@@ -193,11 +197,81 @@ def _seed_demo_catalog() -> int:
          "description": "Демонстраційна картка ветпрепарату. Ціна-приклад за онлайн-карткою Pethouse; товар і наявність у PetMind не продаються. Перед застосуванням проконсультуйтеся з ветеринаром.",
          "ingredients_text": "", "protein": None, "fat": None, "is_regular": False, "package_weight_kg": 0.0},
     ]
+    by_id = {row["id"]: row for row in rows}
+    for row in demo_catalog():
+        by_id.setdefault(row["id"], row)  # hand-written rows win on id collisions
+    columns = sorted({key for row in by_id.values() for key in row})
+    rows = [{column: row.get(column) for column in columns} for row in by_id.values()]
     with SessionLocal() as session:
         statement = insert(Product).values(rows)
-        update_fields = {key: getattr(statement.excluded, key) for key in rows[0] if key != "id"}
+        update_fields = {key: getattr(statement.excluded, key) for key in columns if key != "id"}
         session.execute(statement.on_conflict_do_update(index_elements=["id"], set_=update_fields))
         session.commit()
+    return len(rows)
+
+
+def _seed_demo_enrichment() -> dict[str, int]:
+    """Ingredient rows, product vectors and knowledge chunks for demo goods; idempotent."""
+    evaluator = default_evaluator()
+    embeddings = EmbeddingService()
+    with SessionLocal() as session:
+        products = session.query(Product).filter(Product.id.like("PETMIND-DEMO-%")).all()
+        ids = [product.id for product in products]
+        session.query(ProductIngredient).filter(ProductIngredient.product_id.in_(ids)).delete(synchronize_session=False)
+        ingredient_rows = []
+        for product in products:
+            for position, item in enumerate(evaluator.items(product.ingredients_text)):
+                known = hasattr(item, "canonical_name")
+                ingredient_rows.append({"product_id": product.id, "position": position,
+                                        "name": item.variant if known else str(item),
+                                        "canonical_name": item.canonical_name if known else str(item),
+                                        "allergen_group": (item.allergen_group or None) if known else None,
+                                        "theta": item.theta if known else None})
+        if ingredient_rows:
+            session.execute(insert(ProductIngredient), ingredient_rows)
+        session.commit()
+        vectors = embeddings.ensure_product_vectors(session, products)
+        session.query(KBChunk).filter(KBChunk.product_id.in_(ids)).delete(synchronize_session=False)
+        documents = []
+        for product in products:
+            composition = (f"Склад товару «{product.title}»: {product.ingredients_text}"
+                           if product.ingredients_text else None)
+            for content in (product.description, composition):
+                if content:
+                    documents.extend((product.id, piece) for piece in chunk_text(str(content)))
+        if documents:
+            encoded = embeddings.rag_embedder().encode([text for _, text in documents])
+            session.execute(insert(KBChunk), [{"product_id": pid, "text": text, "embedding": vector.tolist()}
+                                              for (pid, text), vector in zip(documents, encoded)])
+        session.commit()
+    return {"demo_ingredients": len(ingredient_rows), "demo_vectors_added": vectors, "demo_kb_chunks": len(documents)}
+
+
+def _seed_demo_purchases() -> int:
+    """Two purchases 30 days apart per regular demo food so replenishment reminders appear."""
+    plan = {"petly-demo-murchyk": "PETMIND-DEMO-CAT-STERILIZED-SALMON",
+            "petly-demo-richie": "PETMIND-DEMO-DOG-ADULT-BEEF"}
+    today = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0)
+    rows = []
+    with SessionLocal() as session:
+        for external_id, product_id in plan.items():
+            user_id = uuid.uuid5(NAMESPACE, external_id)
+            if session.get(Product, product_id) is None or session.get(User, user_id) is None:
+                continue
+            already = session.query(Purchase).filter_by(user_id=user_id, product_id=product_id).count()
+            if already:
+                continue
+            pet = session.query(Pet).filter_by(user_id=user_id).first()
+            for days_ago in (55, 25):
+                row = {"user_id": user_id, "product_id": product_id, "ts": today - timedelta(days=days_ago),
+                       "rating": 5.0, "quantity": 1}
+                if pet is not None and hasattr(Purchase, "pet_id"):
+                    row["pet_id"] = pet.id
+                rows.append(row)
+        if rows:
+            session.execute(insert(Purchase).values(rows).on_conflict_do_nothing(
+                constraint="uq_purchase_user_product_ts"))
+            session.commit()
     return len(rows)
 
 
@@ -207,6 +281,8 @@ def seed(processed_dir: str | Path = ROOT / "data" / "processed", *, demo_only: 
         counts = _seed_demo_profiles()
         _seed_admin_account()
         counts["demo_products"] = _seed_demo_catalog()
+        counts.update(_seed_demo_enrichment())
+        counts["demo_purchases"] = _seed_demo_purchases()
         return counts
     processed_dir = Path(processed_dir)
     products_path = processed_dir / "products.parquet"
@@ -359,7 +435,7 @@ def seed(processed_dir: str | Path = ROOT / "data" / "processed", *, demo_only: 
         demo_food = next((row for row in product_rows
             if row["species"] == "cat" and row["is_regular"]
             and row["ingredients_text"]
-            and is_safe(ingredient_list(row["ingredients_text"], normalizations), ["птиця"])), None)
+            and default_evaluator().evaluate(row["ingredients_text"], ["птиця"]).safe), None)
         if demo_food is not None:
             demo_purchases = [
                 {"user_id": murchyk_id, "product_id": demo_food["id"],

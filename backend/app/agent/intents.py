@@ -44,9 +44,15 @@ class RoutedReply:
 
 
 class DeterministicIntentRouter:
-    def __init__(self, tools: ToolRegistry, trace: Callable[[str, dict[str, Any], Callable[[], Any]], Any]) -> None:
+    def __init__(self, tools: ToolRegistry, trace: Callable[[str, dict[str, Any], Callable[[], Any]], Any],
+                 cards: Callable[[ToolContext], list[dict[str, Any]]] | None = None) -> None:
         self.tools = tools
         self._trace = trace  # executes a tool and records it in the tool trace
+        # The reply names exactly the cards the user will see (after FinalCardsGuard).
+        self._cards = cards or (lambda ctx: list(ctx.approved.values()))
+
+    def _card_titles(self, ctx: ToolContext) -> list[str]:
+        return [str(card.get("title")) for card in self._cards(ctx) if card.get("title")]
 
     def classify(self, text: str) -> Intent:
         for intent, pattern in _RULES:
@@ -87,11 +93,9 @@ class DeterministicIntentRouter:
 
     def _search(self, text: str, ctx: ToolContext) -> str:
         found = self._call(ctx, "search_products", {"query": text}) or []
-        safe_titles = []
         for product in found[:6]:
-            result = self._call(ctx, "check_safety", {"product_id": product["id"], "pet_id": ctx.pet_id}) or {}
-            if result.get("safe"):
-                safe_titles.append(product["title"])
+            self._call(ctx, "check_safety", {"product_id": product["id"], "pet_id": ctx.pet_id})
+        safe_titles = self._card_titles(ctx)
         if safe_titles:
             return "Знайшов безпечні для вашої тварини товари: " + "; ".join(safe_titles[:4]) + "."
         if found:
@@ -99,7 +103,8 @@ class DeterministicIntentRouter:
         return self._recommendations(text, ctx, prefix="За цим запитом нічого не знайшов. ")
 
     def _recommendations(self, text: str, ctx: ToolContext, prefix: str = "") -> str:
-        rows = self._call(ctx, "get_recommendations", {"k": 5}) or []
-        if not rows:
+        self._call(ctx, "get_recommendations", {"k": 5})
+        titles = self._card_titles(ctx)
+        if not titles:
             return prefix + "Зараз не знайшов перевірених рекомендацій."
-        return prefix + "Ось безпечні рекомендації для вашої тварини: " + "; ".join(r["title"] for r in rows[:4]) + "."
+        return prefix + "Ось безпечні рекомендації для вашої тварини: " + "; ".join(titles[:4]) + "."

@@ -9,7 +9,12 @@ from typing import Any
 import httpx
 import pytest
 
-BASE_URL = os.getenv("PETLY_API_URL", "http://localhost:8000").rstrip("/")
+BASE_URL = (os.getenv("PETMIND_API_URL") or os.getenv("PETLY_API_URL") or "http://localhost:8000").rstrip("/")
+DEMO_PASSWORD = os.getenv("PETMIND_DEMO_PASSWORD", "PetMindDemo2026!")
+# Seeded demo owners (backend/scripts/seed.py --demo-only); private routes need a bearer token.
+DEMO_EMAILS = {"мурчик": "murchyk@petmind.local", "річі": "richie@petmind.local", "луна": "luna@petmind.local"}
+
+
 @pytest.fixture(scope="session")
 def client() -> httpx.Client:
     with httpx.Client(base_url=BASE_URL, timeout=40.0) as session:
@@ -21,6 +26,14 @@ def client() -> httpx.Client:
         yield session
 
 
+def _login(client: httpx.Client, email: str) -> None:
+    response = client.post("/api/auth/login", json={"email": email, "password": DEMO_PASSWORD})
+    if response.status_code == 401:
+        pytest.fail(f"Demo login failed for {email}; re-run the seed or set PETMIND_DEMO_PASSWORD")
+    response.raise_for_status()
+    client.headers["Authorization"] = f"Bearer {response.json()['access_token']}"
+
+
 def _users(client: httpx.Client) -> list[dict[str, Any]]:
     response = client.get("/api/users")
     response.raise_for_status()
@@ -28,6 +41,9 @@ def _users(client: httpx.Client) -> list[dict[str, Any]]:
 
 
 def _user_and_pet(client: httpx.Client, *, user_env: str, pet_env: str, pet_name: str | None = None):
+    email = os.getenv(user_env.replace("_USER_ID", "_EMAIL")) or DEMO_EMAILS.get((pet_name or "").casefold())
+    if email:
+        _login(client, email)
     users = _users(client)
     wanted_user = os.getenv(user_env)
     if wanted_user:

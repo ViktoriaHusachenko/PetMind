@@ -123,7 +123,7 @@ class PetMindAgent:
                 row["latency_ms"] = round((time.perf_counter() - started) * 1000, 1)
                 trace.append(row)
 
-        routed = DeterministicIntentRouter(self.tools, traced).answer(text, ctx)
+        routed = DeterministicIntentRouter(self.tools, traced, self.cards_guard.filter).answer(text, ctx)
         reply = f"{routed.reply}\n\n{SIMPLIFIED_NOTE}"
         return self._response(reply, self.cards_guard.filter(ctx), trace, "fallback")
 
