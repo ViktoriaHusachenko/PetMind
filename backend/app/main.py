@@ -13,11 +13,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .schemas import (
-    AdminProductCreate, AdminProductUpdate, AuthResponse, ChatRequest, ChatResponse, EventCreate, EventOut, HealthOut, LoginRequest, PetCreate, PetOut, PetUpdate, ProductDetail,
+    AdminProductCreate, AdminProductUpdate, AuthResponse, ChatRequest, ChatResponse, EventCreate, EventOut, HealthOut, LLMHealthOut, LoginRequest, PetCreate, PetOut, PetUpdate, ProductDetail,
     ProductListItem, ProductPage, PurchaseCreate, PurchaseOut, RecommendationItem, RegisterRequest, ReminderOut, StatsOut, UserOut,
 )
 
-logger = logging.getLogger("petly.api")
+logger = logging.getLogger("petmind.api")
 
 
 def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> FastAPI:
@@ -79,6 +79,13 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         except Exception as exc:
             raise HTTPException(status_code=503, detail="Database unavailable") from exc
         return {"status": "ok", "database": "ok"}
+
+    @router.get("/health/llm", response_model=LLMHealthOut)
+    def llm_health(request: Request):
+        status = getattr(request.app.state.service, "llm_status", None)
+        if not callable(status):
+            return {"provider": "disabled", "state": "disabled"}
+        return status()
 
     @router.get("/stats", response_model=StatsOut)
     def stats(request: Request, user_id: str | None = None, pet_id: str | None = None, authorization: str = Header(default="")):

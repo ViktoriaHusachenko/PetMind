@@ -114,3 +114,9 @@ def test_health_cors_and_openapi_schemas(client):
     schemas = spec["components"]["schemas"]
     assert {"PetCreate", "PetUpdate", "PetOut", "ProductPage", "ProductDetail",
             "RecommendationItem", "ReminderOut", "EventCreate", "PurchaseCreate", "HealthOut"}.issubset(schemas)
+
+
+def test_llm_health_endpoint_has_no_secrets(client):
+    client.service.llm_status = lambda: {"provider": "gemini", "state": "not_configured", "detail": "GEMINI_API_KEY is not set"}
+    body = client.get("/api/health/llm").json()
+    assert body["provider"] == "gemini" and body["state"] == "not_configured"

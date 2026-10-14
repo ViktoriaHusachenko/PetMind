@@ -22,13 +22,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from petrec.composition import composition_score, ingredient_list, is_safe, safety_explanation
 from petrec.feedback import update_preference_state
-from petrec.llm import AnthropicClient, LLMClient, OllamaClient, OpenAIClient
+from petrec.llm import LLMClient
 from petrec.pipeline import RecommendationPipeline
 from petrec.profiles import ProductEmbedder
 from petrec.rag import Embedder, RAGIndex, SearchResult, VectorStore, search_pg_chunks
 
 from .auth import TokenAuthMixin
 from .config import get_settings
+from .llm import LLMClientFactory, LLMRuntime
 from .db.database import SessionLocal, engine
 from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase, Reminder, User
 
@@ -85,29 +86,23 @@ def _product_out(product: Product, pet: Pet | None = None) -> dict[str, Any]:
 class APIService(TokenAuthMixin):
     """CRUD/query service with short-lived recommendation and pipeline caches."""
 
-    def __init__(self, session_factory: sessionmaker = SessionLocal, llm_client: LLMClient | None = None):
+    def __init__(self, session_factory: sessionmaker = SessionLocal, llm_client: LLMClient | None = None,
+                 llm_runtime: LLMRuntime | None = None):
         self.session_factory = session_factory
-        self.llm_client = llm_client if llm_client is not None else self._make_llm_client()
+        if llm_runtime is None:
+            llm_runtime = (LLMRuntime.from_client(llm_client) if llm_client is not None
+                           else LLMClientFactory(get_settings().llm).build_runtime())
+        self.llm_runtime = llm_runtime
+        # Chat agent and rerank/reminder texts use separate clients with separate budgets.
+        self.llm_client = llm_runtime.chat
+        self.rerank_client = llm_runtime.rerank
         self._pipeline_cache: dict[tuple[str, str], tuple[float, RecommendationPipeline]] = {}
         self._recommendation_cache: dict[tuple[str, str, int, bool], tuple[float, list[dict[str, Any]]]] = {}
         self._cache_lock = threading.RLock()
         self._model_embedder: Embedder | None = None
 
-    @staticmethod
-    def _make_llm_client() -> LLMClient | None:
-        llm = get_settings().llm
-        model = llm.chat_model
-        try:
-            if llm.provider == "anthropic":
-                return AnthropicClient(model=model or "claude-3-5-haiku-latest", api_key=llm.anthropic_api_key,
-                                       cache_path=llm.cache_path)
-            if llm.provider == "ollama":
-                return OllamaClient(model=model or llm.ollama_model, host=llm.ollama_host, cache_path=llm.cache_path)
-            if llm.provider == "openai":
-                return OpenAIClient(model=model or "gpt-4o-mini", api_key=llm.openai_api_key, cache_path=llm.cache_path)
-        except ValueError:
-            logger.warning("LLM provider %s is not configured; recommendations will use fallback scoring", llm.provider)
-        return None
+    def llm_status(self) -> dict[str, Any]:
+        return self.llm_runtime.status()
 
     def _timed(self, step: str, function, *args, **kwargs):
         started = time.perf_counter()
@@ -413,7 +408,7 @@ class APIService(TokenAuthMixin):
         bound_engine = self.session_factory.kw.get("bind", engine)
         rag_index = RAGIndex(store=_DatabaseKBStore(bound_engine), embedder=Embedder())
         pipeline = self._timed("pipeline_build", RecommendationPipeline, interactions, products_frame,
-            profile, llm_client=self.llm_client, item_embeddings=item_vectors, rag_index=rag_index,
+            profile, llm_client=self.rerank_client, item_embeddings=item_vectors, rag_index=rag_index,
             build_rag_index=False)
         self._pipeline_cache[key] = (now + get_settings().recommendation_ttl_seconds, pipeline)
         return pipeline
@@ -605,7 +600,7 @@ class APIService(TokenAuthMixin):
                     severity = "прострочено" if days_left < 0 else "сьогодні" if days_left == 0 else "скоро"
                     text_value = get_reminders(str(uid), str(pet.id), current,
                         items=[{"item_id": product_id, "title": product.title, "expected_date": expected}],
-                        llm_client=self.llm_client)[0]
+                        llm_client=self.rerank_client)[0]
                     candidates.setdefault(uid, []).append((priority, pet.id, product_id, expected,
                                                             reminder_date, severity, days_left, text_value))
 

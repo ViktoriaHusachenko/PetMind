@@ -1,4 +1,4 @@
-"""Pydantic request and response schemas for the Petly HTTP API."""
+"""Pydantic request and response schemas for the PetMind HTTP API."""
 
 from __future__ import annotations
 
@@ -199,6 +199,16 @@ class PurchaseOut(BaseModel):
 class HealthOut(BaseModel):
     status: Literal["ok"]
     database: Literal["ok"]
+
+
+class LLMHealthOut(BaseModel):
+    """Public LLM state; never includes keys."""
+
+    provider: str
+    state: Literal["ok", "disabled", "not_configured", "quota", "unavailable"]
+    models: dict[str, str] = Field(default_factory=dict)
+    detail: str = ""
+    budget: dict[str, dict[str, int]] = Field(default_factory=dict)
 
 
 class StatsOut(BaseModel):

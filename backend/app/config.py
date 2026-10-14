@@ -57,7 +57,7 @@ class LLMSettings(BaseModel):
     anthropic_api_key: str | None = None
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
-    cache_path: str = ".cache/petrec_llm_cache.json"
+    cache_path: str | None = ".cache/petrec_llm_cache.json"
     timeout_seconds: float = Field(default=20.0, gt=0)
     max_retries: int = Field(default=2, ge=0)
     breaker_failures: int = Field(default=3, ge=1)
