@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .schemas import (
-    AdminProductCreate, AdminProductUpdate, AuthResponse, ChatRequest, ChatResponse, EventCreate, EventOut, HealthOut, LLMHealthOut, LoginRequest, PetCreate, PetOut, PetUpdate, ProductDetail,
+    AdminProductCreate, AllergenOption, AdminProductUpdate, AuthResponse, ChatRequest, ChatResponse, EventCreate, EventOut, HealthOut, LLMHealthOut, LoginRequest, PetCreate, PetOut, PetUpdate, ProductDetail,
     ProductListItem, ProductPage, PurchaseCreate, PurchaseOut, RecommendationItem, RegisterRequest, ReminderOut, StatsOut, UserOut,
 )
 
@@ -86,6 +86,11 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         if not callable(status):
             return {"provider": "disabled", "state": "disabled"}
         return status()
+
+    @router.get("/allergens", response_model=list[AllergenOption])
+    def allergens():
+        from .safety.allergens import ALLERGEN_OPTIONS
+        return list(ALLERGEN_OPTIONS)
 
     @router.get("/stats", response_model=StatsOut)
     def stats(request: Request, user_id: str | None = None, pet_id: str | None = None, authorization: str = Header(default="")):

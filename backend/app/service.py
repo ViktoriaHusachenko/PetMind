@@ -20,7 +20,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from petrec.composition import composition_score, ingredient_list, is_safe, safety_explanation
 from petrec.feedback import update_preference_state
 from petrec.llm import LLMClient
 from petrec.pipeline import RecommendationPipeline
@@ -30,6 +29,7 @@ from petrec.rag import Embedder, RAGIndex, SearchResult, VectorStore, search_pg_
 from .auth import TokenAuthMixin
 from .config import get_settings
 from .llm import LLMClientFactory, LLMRuntime
+from .safety import SafetyDecision, default_evaluator
 from .db.database import SessionLocal, engine
 from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase, Reminder, User
 
@@ -77,10 +77,16 @@ def _product_out(product: Product, pet: Pet | None = None) -> dict[str, Any]:
              "price": _float(product.price), "image_url": product.image_url,
              "safe": None, "danger_reason": None}
     if pet is not None:
-        normalized = ingredient_list(product.ingredients_text or "")
-        value["safe"] = is_safe(normalized, pet.allergens or [])
-        value["danger_reason"] = safety_explanation(normalized, pet.allergens or [])
+        decision = _safety(product, pet)
+        value["safe"] = decision.safe
+        value["danger_reason"] = decision.reason
     return value
+
+
+def _safety(product: Product, pet: Pet) -> SafetyDecision:
+    """Deterministic Safe for one product and pet; the only source of the allergen badge."""
+    return default_evaluator().evaluate(product.ingredients_text, pet.allergens or [],
+                                        pet_species=pet.species, product_species=product.species)
 
 
 class APIService(TokenAuthMixin):
@@ -252,10 +258,8 @@ class APIService(TokenAuthMixin):
             pet = session.get(Pet, _uid(pet_id))
             if product is None or pet is None:
                 return {"product_id": product_id, "safe": False, "reason": "Товар або тварину не знайдено."}
-            ingredients = ingredient_list(product.ingredients_text or "")
-            safe = is_safe(ingredients, pet.allergens or [])
-            return {"product_id": product.id, "safe": bool(safe),
-                    "reason": safety_explanation(ingredients, pet.allergens or []) if not safe else None}
+            decision = _safety(product, pet)
+            return {"product_id": product.id, "safe": decision.safe, "reason": decision.reason}
 
     def chat(self, user_id: str, pet_id: str, messages: list[dict[str, str]]) -> dict[str, Any]:
         from .services.agent import PetlyAgent
@@ -345,8 +349,9 @@ class APIService(TokenAuthMixin):
             if product is None:
                 return None
             pet = self._pet_for_product_query(session, pet_id) if pet_id else None
-            ingredients = ingredient_list(product.ingredients_text or "")
-            comp = composition_score(product.ingredients_text or "", allergens=pet.allergens if pet else [],
+            evaluator = default_evaluator()
+            ingredients = evaluator.items(product.ingredients_text)
+            comp = evaluator.composition(product.ingredients_text, pet.allergens if pet else [],
                 nutrients={"protein": _float(product.protein), "fat": _float(product.fat)},
                 moisture=_float(product.moisture) if product.moisture is not None else None,
                 species=pet.species if pet else None)
@@ -354,10 +359,10 @@ class APIService(TokenAuthMixin):
             for index, ingredient in enumerate(ingredients):
                 canonical = ingredient.canonical_name if hasattr(ingredient, "canonical_name") else str(ingredient)
                 group = ingredient.allergen_group if hasattr(ingredient, "allergen_group") else None
-                highlighted = bool(pet and safety_explanation([ingredient], pet.allergens or []))
+                highlighted = bool(pet and evaluator.is_allergen(ingredient, pet.allergens or []))
                 ingredient_rows.append({"position": index, "name": str(ingredient.variant if hasattr(ingredient, "variant") else ingredient),
                     "canonical_name": canonical, "allergen_group": group, "is_allergen": highlighted})
-            danger = safety_explanation(ingredients, pet.allergens if pet else []) if pet else None
+            danger = _safety(product, pet).reason if pet else None
             rag_chunks = []
             if product.embedding is not None:
                 raw = engine.raw_connection()
@@ -383,12 +388,13 @@ class APIService(TokenAuthMixin):
         user = session.get(User, user_id)
         purchases = session.scalars(select(Purchase).where(Purchase.user_id == user_id).order_by(Purchase.ts)).all()
         products_db = session.scalars(select(Product)).all()
+        evaluator = default_evaluator()
         product_rows = []
         item_vectors = {}
         for product in products_db:
             product_rows.append({"parent_asin": product.id, "title": product.title, "brand": product.brand,
                 "categories": product.category, "description": product.description, "species": product.species,
-                "ingredients_text": product.ingredients_text, "proteins_100g": product.protein,
+                "ingredients_text": evaluator.normalizer.canonical_text(product.ingredients_text), "proteins_100g": product.protein,
                 "fat_100g": product.fat, "moisture_100g": product.moisture,
                 "energy-kcal_100g": product.kcal_100g,
                 "package_weight_kg": product.package_weight_kg,
@@ -401,7 +407,7 @@ class APIService(TokenAuthMixin):
             "timestamp": _iso_days(purchase.ts)} for purchase in purchases],
             columns=["user_id", "parent_asin", "rating", "timestamp"])
         profile = pd.DataFrame([{"user_id": str(user_id), "pet_species": pet.species,
-            "age_group": self._age_group(pet.birth_date, pet.species), "allergen_groups": pet.allergens or [],
+            "age_group": self._age_group(pet.birth_date, pet.species), "allergen_groups": evaluator.allergen_groups(pet.allergens or []),
             "lifestyle": pet.lifestyle, "diet_restrictions": pet.diet_restrictions or [],
             "preference_state": user.preference_state if user else {}}])
         products_frame = pd.DataFrame(product_rows)
@@ -515,8 +521,9 @@ class APIService(TokenAuthMixin):
                 item_pet = session.get(Pet, item_pet_id) if item_pet_id is not None else None
                 if item_pet_id is not None and (item_pet is None or item_pet.user_id != uid):
                     raise LookupError("Обрана тварина не належить цьому обліковому запису.")
-                if item_pet is not None and not is_safe(ingredient_list(product.ingredients_text or ""), item_pet.allergens or []):
-                    explanation = safety_explanation(ingredient_list(product.ingredients_text or ""), item_pet.allergens or [])
+                decision = _safety(product, item_pet) if item_pet is not None else None
+                if decision is not None and not decision.safe:
+                    explanation = (decision.reason or "").rstrip(".")
                     raise ValueError(f"Не можна оформити «{product.title}» для {item_pet.name}: {explanation}. Змініть тварину для цієї позиції або вилучіть товар.")
                 if item_pet_id is not None:
                     completed = session.scalars(select(Reminder).where(

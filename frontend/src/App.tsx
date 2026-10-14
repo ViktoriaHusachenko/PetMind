@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { apiRequest, useApiResource } from "./api/client";
-import type { AuthResponse, ChatMessage, ChatResponse, Pet, PetInput, Product, ProductDetail, ProductPage, RecommendationItem, ReminderItem, Stats, User } from "./api/types";
+import type { AllergenOption, AuthResponse, ChatMessage, ChatResponse, Pet, PetInput, Product, ProductDetail, ProductPage, RecommendationItem, ReminderItem, Stats, User } from "./api/types";
 
 type IconName = "search" | "user" | "heart" | "cart" | "menu" | "spark" | "arrow" | "check" | "shield" | "truck" | "box" | "refresh" | "close" | "plus" | "send" | "paw";
 type StoreProduct = { id?: string; item_id?: string; title: string; brand?: string | null; category?: string | null; species?: string | null; price?: number | null; image_url?: string | null; safe?: boolean | null; danger_reason?: string | null; match_percent?: number; safe_badge?: boolean; reason?: string; composition_summary?: string[]; cart_pet_id?: string };
@@ -180,6 +180,7 @@ function RecommendationsPage({ userId, pet, addToCart }: { userId: string; pet?:
 }
 
 function AccountPage({ userId, pets, selectedPetId, setSelectedPetId, refreshPets }: { userId: string; pets: Pet[]; selectedPetId: string; setSelectedPetId: (id: string) => void; refreshPets: () => void }) {
+  const allergenState = useApiResource<AllergenOption[]>("/allergens");
   const remindersState = useApiResource<ReminderItem[]>(userId && selectedPetId ? `/reminders?user_id=${encodeURIComponent(userId)}&pet_id=${encodeURIComponent(selectedPetId)}` : null, selectedPetId);
   const selectedPet = pets.find((pet) => pet.id === selectedPetId);
   const [isNew, setIsNew] = useState(false); const [name, setName] = useState(""); const [species, setSpecies] = useState<string>("cat");
@@ -210,7 +211,8 @@ function AccountPage({ userId, pets, selectedPetId, setSelectedPetId, refreshPet
     try { await apiRequest("/purchases", { method: "POST", body: JSON.stringify({ user_id: userId, pet_id: selectedPetId, items: [{ product_id: reminder.item_id }] }) }); setNotice("Повторне замовлення оформлено."); remindersState.reload(); }
     catch (error) { setFormError(error instanceof Error ? error.message : "Не вдалося оформити замовлення."); }
   }
-  const allergenOptions = ["птиця", "курятина", "яловичина", "риба", "пшениця", "злаки з глютеном", "молочні продукти"];
+  // Values are canonical allergen groups from the backend dictionary; legacy profile values stay visible.
+  const allergenOptions = [...(allergenState.data || []), ...allergens.filter((value) => !(allergenState.data || []).some((option) => option.value === value)).map((value) => ({ value, label: value }))];
   return <main className="container section-space"><div className="section-heading"><div><span className="section-overline">Особистий кабінет</span><h1>Профілі та нагадування</h1></div></div>
     <section className="research-panel"><div className="section-heading"><div><h2>Профілі тварин</h2></div><button className="secondary-button" onClick={() => { setIsNew(true); setName(""); setSpecies("cat"); setBirthDate(""); setWeight(""); setBreed(""); setAllergens([]); setRestrictions(""); setLifestyle(""); }}>Додати тварину</button></div>
       <label className="field-label">Обрана тварина<select className="form-control" value={selectedPetId} onChange={(event) => { setIsNew(false); setSelectedPetId(event.target.value); }}>{pets.map((pet) => <option key={pet.id} value={pet.id}>{pet.name} · {pet.species === "cat" ? "кіт" : "собака"}</option>)}</select></label>
@@ -220,7 +222,7 @@ function AccountPage({ userId, pets, selectedPetId, setSelectedPetId, refreshPet
         <label className="field-label">Маса, кг<input className="form-control" type="number" min="0.1" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} /></label>
         <label className="field-label">Порода<input className="form-control" value={breed} onChange={(e) => setBreed(e.target.value)} /></label>
         <label className="field-label">Спосіб життя<select className="form-control" value={lifestyle} onChange={(e) => setLifestyle(e.target.value)}><option value="">Не вказано</option><option value="активний">Активний</option><option value="помірний">Помірний</option><option value="домашній">Домашній</option><option value="стерилізований">Стерилізований</option></select></label>
-        <fieldset className="field-set"><legend>Алергени</legend>{allergenOptions.map((allergen) => <label key={allergen}><input type="checkbox" checked={allergens.includes(allergen)} onChange={(event) => setAllergens(event.target.checked ? [...allergens, allergen] : allergens.filter((value) => value !== allergen))} /> {allergen}</label>)}</fieldset>
+        <fieldset className="field-set"><legend>Алергени</legend>{allergenState.loading && <span>Завантаження…</span>}{allergenOptions.map((allergen) => <label key={allergen.value}><input type="checkbox" checked={allergens.includes(allergen.value)} onChange={(event) => setAllergens(event.target.checked ? [...allergens, allergen.value] : allergens.filter((value) => value !== allergen.value))} /> {allergen.label}</label>)}</fieldset>
         <label className="field-label md:col-span-2">Дієтичні обмеження (через кому)<input className="form-control" value={restrictions} onChange={(e) => setRestrictions(e.target.value)} /></label>
         <div className="md:col-span-2"><button className="primary-button" disabled={saving || (!isNew && !selectedPetId)}>{saving ? "Збереження…" : isNew ? "Створити профіль" : "Зберегти зміни"}</button>{formError && <p className="form-error" role="alert">{formError}</p>}{notice && <p className="form-notice" role="status">{notice}</p>}</div>
       </form>

@@ -106,3 +106,12 @@ export type ApiState<T> = {
 };
 
 export type AuthResponse = { user: User; access_token: string };
+
+export type AllergenOption = { value: string; label: string };
+
+export type LLMHealth = {
+  provider: string;
+  state: "ok" | "disabled" | "not_configured" | "quota" | "unavailable";
+  models: Record<string, string>;
+  detail: string;
+};

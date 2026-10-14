@@ -31,9 +31,13 @@ class AuthResponse(BaseModel):
     access_token: str
 
 
+Species = Literal["cat", "dog"]
+
+
 class PetCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
-    species: str = Field(min_length=1, max_length=40)
+    # Only species with a catalog and a species filter are accepted (BUG-012).
+    species: Species
     birth_date: date | None = None
     breed: str | None = None
     weight_kg: float | None = Field(default=None, gt=0)
@@ -45,7 +49,7 @@ class PetCreate(BaseModel):
 
 class PetUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=160)
-    species: str | None = Field(default=None, max_length=40)
+    species: Species | None = None
     birth_date: date | None = None
     breed: str | None = None
     weight_kg: float | None = Field(default=None, gt=0)
@@ -94,7 +98,7 @@ class AdminProductCreate(BaseModel):
     title: str = Field(min_length=1)
     brand: str | None = None
     category: str | None = None
-    species: str | None = Field(default=None, max_length=40)
+    species: Species | None = None
     price: float | None = Field(default=None, ge=0)
     image_url: str | None = None
     description: str | None = None
@@ -194,6 +198,11 @@ class PurchaseOut(BaseModel):
     product_id: str
     ts: datetime
     rating: float | None
+
+
+class AllergenOption(BaseModel):
+    value: str
+    label: str
 
 
 class HealthOut(BaseModel):

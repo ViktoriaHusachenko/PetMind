@@ -120,3 +120,10 @@ def test_llm_health_endpoint_has_no_secrets(client):
     client.service.llm_status = lambda: {"provider": "gemini", "state": "not_configured", "detail": "GEMINI_API_KEY is not set"}
     body = client.get("/api/health/llm").json()
     assert body["provider"] == "gemini" and body["state"] == "not_configured"
+
+
+def test_allergen_options_and_species_validation(client):
+    options = client.get("/api/allergens").json()
+    assert {"value": "птиця", "label": "Птиця (курка, індичка, качка)"} in options
+    rejected = client.post(f"/api/users/{UID}/pets", json={"name": "Кеша", "species": "parrot"})
+    assert rejected.status_code == 422

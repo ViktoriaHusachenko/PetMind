@@ -1,0 +1,90 @@
+pattern,variant
+\bpoultry\b,poultry
+\bfowl\b,poultry
+\bптиц\w*,poultry
+\bптах\w*,poultry
+\bchicken\b,chicken
+\bhen\b,chicken
+\bкур(?:к|ят|яч|ей|и|о)\w*,chicken
+\bкурч\w*,chicken
+\bturkey\b,turkey
+\bіндич\w*,turkey
+\bіндик\w*,turkey
+\bduck\b,duck
+\bкач(?:к|ин|ач)\w*,duck
+\bgoose\b,poultry
+\bгус(?:ак|ин|к|ят|яч)\w*,poultry
+\bquail\b,poultry
+\bперепел\w*,poultry
+\bwheat\b,wheat
+\bпшени\w*,wheat
+\bпшенич\w*,wheat
+\bgluten\b,wheat gluten
+\bглютен\w*,wheat gluten
+\bbarley\b,barley
+\bячм\w*,barley
+\bячмін\w*,barley
+\brye\b,rye
+\bжит(?:о|а|н)\w*,rye
+\boats?\b,oats
+\boatmeal\b,oatmeal
+\bвівс\w*,oats
+\bовес\b,oats
+\bbeef\b,beef
+\bbovine\b,beef
+\bялович\w*,beef
+\bтелят\w*,beef
+\blamb\b,lamb
+\bmutton\b,lamb
+\bягн\w*,lamb
+\bбаранин\w*,lamb
+\bpork\b,pork
+\bсвин\w*,pork
+\bsalmon\b,salmon
+\bлосос\w*,salmon
+\btuna\b,tuna
+\bтун(?:ець|ц)\w*,tuna
+\bcod\b,cod
+\bтріск\w*,cod
+\bwhitefish\b,whitefish
+\b(?:fish|trout|herring|sardines?|anchov\w*|mackerel|pollock|hake|krill|seafood)\b,fish
+\bриб\w*,fish
+\bфорел\w*,fish
+\bоселед\w*,fish
+\bсардин\w*,fish
+\bанчоус\w*,fish
+\bскумбр\w*,fish
+\bминта\w*,fish
+\bхек\w*,fish
+\bкриль\w*,fish
+\bморепродукт\w*,fish
+\b(?:milk|dairy|lactose|casein\w*|yogh?urt|butter|cream)\b,milk
+\bcheese\b,cheese
+\bwhey\b,whey
+\bмолок\w*,milk
+\bмолоч\w*,milk
+\bлактоз\w*,milk
+\bказеїн\w*,milk
+\bвершк\w*,milk
+\bйогурт\w*,milk
+\bсироватк\w*,whey
+\bсир\b,cheese
+\beggs?\b,egg
+\bяй(?:ц|ч|е)\w*,egg
+\bsoy\w*,soy
+\bсо[яєї]\w*,soy
+\bcorn\b,corn
+\bmaize\b,maize
+\bкукурудз\w*,corn
+\bliver\b,liver
+\bпечін\w*,liver
+\b(?:animal\s+)?derivatives?\b,animal derivatives
+\bпохідн\w*,animal derivatives
+\b(?:meat|by-?products?)\b,meat meal
+\bм'яс\w*,meat meal
+\banimal\s+fat\b,animal fat
+\bтваринн\w*\s+жир\w*,animal fat
+\bgelatin\w*,gelatin
+\bжелатин\w*,gelatin
+\brice\b,rice
+\bрис\w*,rice
