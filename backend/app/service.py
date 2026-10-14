@@ -294,6 +294,15 @@ class APIService:
             pets = session.scalars(select(Pet).where(Pet.user_id == key).order_by(Pet.name)).all()
             return [_pet_out(pet) for pet in pets]
 
+    def get_pet(self, pet_id: str) -> dict[str, Any] | None:
+        try:
+            key = _uid(pet_id)
+        except LookupError:
+            return None
+        with self.session_factory() as session:
+            pet = session.get(Pet, key)
+            return _pet_out(pet) if pet else None
+
     def create_pet(self, user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         key = _uid(user_id)
         with self.session_factory() as session:
@@ -513,33 +522,37 @@ class APIService:
             user = session.get(User, uid)
             if user is None:
                 raise LookupError("User not found")
-            if pid is not None:
-                pet = session.get(Pet, pid)
-                if pet is None or pet.user_id != uid:
-                    raise LookupError("Pet not found for user")
             outputs = []
             grouped_lines: dict[str, dict[str, Any]] = {}
             for line in payload["items"]:
                 product_key = str(line["product_id"])
-                grouped = grouped_lines.setdefault(product_key, {"product_id": product_key, "quantity": 0,
+                line_pet_id = _uid(line["pet_id"]) if line.get("pet_id") else pid
+                grouped = grouped_lines.setdefault(product_key, {"product_id": product_key, "pet_id": line_pet_id, "quantity": 0,
                                                                   "rating": line.get("rating")})
+                if grouped["pet_id"] != line_pet_id:
+                    raise ValueError("Один товар у кошику не можна прив’язати до кількох тварин.")
                 grouped["quantity"] += int(line.get("quantity", 1))
             for line in grouped_lines.values():
                 product = session.get(Product, line["product_id"])
                 if product is None:
                     raise LookupError(f"Product {line['product_id']} not found")
-                if pid is not None and not is_safe(ingredient_list(product.ingredients_text or ""), pet.allergens or []):
-                    raise ValueError(f"Товар «{product.title}» небезпечний для алергій обраної тварини.")
-                if pid is not None:
+                item_pet_id = line["pet_id"]
+                item_pet = session.get(Pet, item_pet_id) if item_pet_id is not None else None
+                if item_pet_id is not None and (item_pet is None or item_pet.user_id != uid):
+                    raise LookupError("Обрана тварина не належить цьому обліковому запису.")
+                if item_pet is not None and not is_safe(ingredient_list(product.ingredients_text or ""), item_pet.allergens or []):
+                    explanation = safety_explanation(ingredient_list(product.ingredients_text or ""), item_pet.allergens or [])
+                    raise ValueError(f"Не можна оформити «{product.title}» для {item_pet.name}: {explanation}. Змініть тварину для цієї позиції або вилучіть товар.")
+                if item_pet_id is not None:
                     completed = session.scalars(select(Reminder).where(
-                        Reminder.user_id == uid, Reminder.pet_id == pid,
+                        Reminder.user_id == uid, Reminder.pet_id == item_pet_id,
                         Reminder.product_id == product.id, Reminder.status == "new"
                     )).all()
                     for reminder in completed:
                         reminder.status = "done"
                 purchase = Purchase(user_id=uid, product_id=product.id, ts=now, rating=line.get("rating"),
                                     quantity=line["quantity"])
-                event = Event(user_id=uid, pet_id=pid, product_id=product.id, type="purchase", ts=now)
+                event = Event(user_id=uid, pet_id=item_pet_id, product_id=product.id, type="purchase", ts=now)
                 user.preference_state = update_preference_state(user.preference_state, "purchase", product.id,
                                                                  category=product.category)
                 session.add_all([purchase, event])

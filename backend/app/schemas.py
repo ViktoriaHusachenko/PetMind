@@ -33,7 +33,7 @@ class AuthResponse(BaseModel):
 
 class PetCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
-    species: Literal["cat", "dog"]
+    species: str = Field(min_length=1, max_length=40)
     birth_date: date | None = None
     breed: str | None = None
     weight_kg: float | None = Field(default=None, gt=0)
@@ -45,7 +45,7 @@ class PetCreate(BaseModel):
 
 class PetUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=160)
-    species: Literal["cat", "dog"] | None = None
+    species: str | None = Field(default=None, max_length=40)
     birth_date: date | None = None
     breed: str | None = None
     weight_kg: float | None = Field(default=None, gt=0)
@@ -94,7 +94,7 @@ class AdminProductCreate(BaseModel):
     title: str = Field(min_length=1)
     brand: str | None = None
     category: str | None = None
-    species: Literal["cat", "dog"] | None = None
+    species: str | None = Field(default=None, max_length=40)
     price: float | None = Field(default=None, ge=0)
     image_url: str | None = None
     description: str | None = None
@@ -168,6 +168,7 @@ class EventCreate(BaseModel):
 
 class PurchaseLine(BaseModel):
     product_id: str
+    pet_id: str | None = None
     rating: float | None = Field(default=None, ge=0, le=5)
     quantity: int = Field(default=1, ge=1, le=100)
 

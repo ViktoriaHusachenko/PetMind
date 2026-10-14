@@ -9,7 +9,7 @@ export type Pet = {
   id: string;
   user_id: string;
   name: string;
-  species: "cat" | "dog";
+  species: string;
   birth_date: string | null;
   breed: string | null;
   weight_kg: number | null;

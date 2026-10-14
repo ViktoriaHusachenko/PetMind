@@ -153,6 +153,8 @@ button { cursor: pointer; }
 .heart-button { position: absolute; z-index: 3; top: 10px; right: 10px; display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 50%; background: rgba(255,255,255,.88); color: #607067; }
 .heart-button.liked { color: #df6844; fill: #df6844; }
 .add-button { display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 10px; background: #284a38; color: white; transition: .2s; }.add-button:hover{background:#df6b45;transform:scale(1.05)}
+.add-button { display: flex; align-items: center; justify-content: center; line-height: 0; padding: 0; }
+.add-button svg { display: block; flex: 0 0 auto; }
 .empty-state { border: 1px dashed #d9ddd6; border-radius: 18px; padding: 60px; text-align: center; color: #7d877f; }.empty-state h3{margin:12px 0 3px;color:#34443a}.empty-state p{font-size:11px}
 .story-section { background: #f0efe8; padding-block: 80px; }
 .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; }

@@ -54,6 +54,23 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
     from fastapi import APIRouter
     router = APIRouter(prefix="/api")
 
+    def authenticated_user(request: Request, authorization: str) -> str:
+        if not authorization.lower().startswith("bearer "):
+            raise HTTPException(status_code=401, detail="Увійдіть, щоб переглянути особисті дані.")
+        try:
+            user_id = request.app.state.service._verify_access_token(authorization[7:].strip())
+        except ValueError as exc:
+            raise HTTPException(status_code=401, detail="Сесія завершилася. Увійдіть знову.") from exc
+        if request.app.state.service.get_user(user_id) is None:
+            raise HTTPException(status_code=401, detail="Обліковий запис не знайдено.")
+        return user_id
+
+    def require_same_user(request: Request, authorization: str, requested_id: str) -> str:
+        current = authenticated_user(request, authorization)
+        if current != requested_id:
+            raise HTTPException(status_code=403, detail="Немає доступу до даних іншого облікового запису.")
+        return current
+
     @router.get("/health", response_model=HealthOut)
     def health(request: Request):
         try:
@@ -63,15 +80,25 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         return {"status": "ok", "database": "ok"}
 
     @router.get("/stats", response_model=StatsOut)
-    def stats(request: Request, user_id: str | None = None, pet_id: str | None = None):
+    def stats(request: Request, user_id: str | None = None, pet_id: str | None = None, authorization: str = Header(default="")):
+        current = authenticated_user(request, authorization)
+        if user_id and user_id != current:
+            raise HTTPException(status_code=403, detail="Немає доступу до даних іншого облікового запису.")
         try:
-            return request.app.state.service.stats(user_id, pet_id)
+            return request.app.state.service.stats(current, pet_id)
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.get("/users", response_model=list[UserOut])
-    def users(request: Request):
-        return request.app.state.service.list_users()
+    def users(request: Request, authorization: str = Header(default="")):
+        current = authenticated_user(request, authorization)
+        user = request.app.state.service.get_user(current)
+        return [user] if user else []
+
+    @router.get("/auth/me", response_model=UserOut)
+    def auth_me(request: Request, authorization: str = Header(default="")):
+        user_id = authenticated_user(request, authorization)
+        return request.app.state.service.get_user(user_id)
 
     @router.post("/auth/register", response_model=AuthResponse, status_code=201)
     def register(payload: RegisterRequest, request: Request):
@@ -92,26 +119,33 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         return {"user": user, "access_token": request.app.state.service.issue_access_token(user["id"])}
 
     @router.get("/users/{id}", response_model=UserOut)
-    def user(id: str, request: Request):
+    def user(id: str, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, id)
         result = request.app.state.service.get_user(id)
         if result is None:
             raise HTTPException(status_code=404, detail="User not found")
         return result
 
     @router.get("/users/{id}/pets", response_model=list[PetOut])
-    def pets(id: str, request: Request):
+    def pets(id: str, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, id)
         return request.app.state.service.list_pets(id)
 
     @router.post("/users/{id}/pets", response_model=PetOut, status_code=201)
-    def create_pet(id: str, payload: PetCreate, request: Request):
+    def create_pet(id: str, payload: PetCreate, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, id)
         try:
             return request.app.state.service.create_pet(id, payload.model_dump(mode="json"))
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.put("/pets/{id}", response_model=PetOut)
-    def update_pet(id: str, payload: PetUpdate, request: Request):
+    def update_pet(id: str, payload: PetUpdate, request: Request, authorization: str = Header(default="")):
         try:
+            current = authenticated_user(request, authorization)
+            pet = request.app.state.service.get_pet(id)
+            if not pet or pet["user_id"] != current:
+                raise HTTPException(status_code=403, detail="Немає доступу до профілю цієї тварини.")
             return request.app.state.service.update_pet(id, payload.model_dump(mode="json", exclude_unset=True))
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -126,8 +160,14 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         sort: str = "relevance",
         page: int = Query(default=1, ge=1),
         pet_id: str | None = None,
+        authorization: str = Header(default=""),
     ):
         try:
+            if pet_id:
+                current = authenticated_user(request, authorization)
+                pet = request.app.state.service.get_pet(pet_id)
+                if not pet or pet["user_id"] != current:
+                    raise HTTPException(status_code=403, detail="Немає доступу до профілю цієї тварини.")
             return request.app.state.service.list_products(
                 species=species, category=category, brand=brand, q=q,
                 sort=sort, page=page, pet_id=pet_id,
@@ -138,8 +178,13 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @router.get("/products/{id}", response_model=ProductDetail)
-    def product_detail(id: str, request: Request, pet_id: str | None = None):
+    def product_detail(id: str, request: Request, pet_id: str | None = None, authorization: str = Header(default="")):
         try:
+            if pet_id:
+                current = authenticated_user(request, authorization)
+                pet = request.app.state.service.get_pet(pet_id)
+                if not pet or pet["user_id"] != current:
+                    raise HTTPException(status_code=403, detail="Немає доступу до профілю цієї тварини.")
             result = request.app.state.service.get_product(id, pet_id=pet_id)
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -178,7 +223,12 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         pet_id: str,
         k: int = Query(default=10, ge=1, le=10),
         use_llm: bool = True,
+        authorization: str = Header(default=""),
     ):
+        require_same_user(request, authorization, user_id)
+        pet_profile = request.app.state.service.get_pet(pet_id)
+        if not pet_profile or pet_profile["user_id"] != user_id:
+            raise HTTPException(status_code=403, detail="Немає доступу до профілю цієї тварини.")
         service_obj = request.app.state.service
         try:
             # Provider HTTP calls have a 20s timeout; petrec retries once and falls back safely.
@@ -189,14 +239,19 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.get("/reminders", response_model=list[ReminderOut])
-    def reminders(user_id: str, pet_id: str, request: Request):
+    def reminders(user_id: str, pet_id: str, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, user_id)
         try:
             return request.app.state.service.list_reminders(user_id, pet_id)
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.post("/chat", response_model=ChatResponse)
-    async def chat(payload: ChatRequest, request: Request):
+    async def chat(payload: ChatRequest, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, payload.user_id)
+        pet_profile = request.app.state.service.get_pet(payload.pet_id)
+        if not pet_profile or pet_profile["user_id"] != payload.user_id:
+            raise HTTPException(status_code=403, detail="Немає доступу до профілю цієї тварини.")
         service_obj = request.app.state.service
         try:
             import anyio
@@ -207,14 +262,16 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.post("/events", response_model=EventOut, status_code=201)
-    def create_event(payload: EventCreate, request: Request):
+    def create_event(payload: EventCreate, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, payload.user_id)
         try:
             return request.app.state.service.record_event(payload.model_dump())
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @router.post("/purchases", response_model=list[PurchaseOut], status_code=201)
-    def create_purchases(payload: PurchaseCreate, request: Request):
+    def create_purchases(payload: PurchaseCreate, request: Request, authorization: str = Header(default="")):
+        require_same_user(request, authorization, payload.user_id)
         try:
             return request.app.state.service.record_purchases(payload.model_dump())
         except LookupError as exc:

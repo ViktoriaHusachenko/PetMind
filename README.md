@@ -19,7 +19,7 @@ docker compose ps
 docker compose exec backend python scripts/seed.py --demo-only
 ```
 
-Open the app at <http://localhost:5173>, the API at <http://localhost:8000/api/health>, and interactive API documentation at <http://localhost:8000/docs>. The database is persisted in the `petly_pgdata` volume and LLM response cache in `petly_llm_cache`. Alembic migrations run when the backend container starts. `--demo-only` creates demo users, pets, and four clearly marked sample products with local SVG images, so catalog browsing, product details, cart, and checkout can be tried without the research Parquet files. Sample product details are illustrative; load the processed catalog for research or real product data. When `products.parquet` and `reviews.parquet` are available, run `docker compose exec backend python scripts/seed.py` to load the catalog, interactions, and embeddings.
+Open the app at <http://localhost:5173>, the API at <http://localhost:8000/api/health>, and interactive API documentation at <http://localhost:8000/docs>. The database is persisted in the `petly_pgdata` volume and LLM response cache in `petly_llm_cache`. Alembic migrations run when the backend container starts. `--demo-only` creates demo profiles, sample feed listings, several brand examples, and veterinary pharmacy cards, so catalog browsing, product details, cart, and checkout can be tried without research Parquet files. Demo details and prices are illustrative; veterinary products are not dispensed by this application. Load the processed catalog for research or real product data. When `products.parquet` and `reviews.parquet` are available, run `docker compose exec backend python scripts/seed.py` to load the catalog, interactions, and embeddings.
 
 To stop the services while preserving data, run `docker compose down`. To also remove stored database/cache data, run `docker compose down -v`.
 
@@ -37,7 +37,7 @@ python backend/scripts/seed.py
 uvicorn app.main:app --app-dir backend --reload
 ```
 
-Without prepared Parquet files, use `python backend/scripts/seed.py --demo-only` after PostgreSQL migrations. This adds demo users and pets plus four clearly labeled sample products, illustrated with bundled SVG images.
+Without prepared Parquet files, use `python backend/scripts/seed.py --demo-only` after PostgreSQL migrations. This adds demo users and pets, clearly labeled food examples, brand examples, and pharmacy product cards. Food rows without a verified package image use the built-in product-card illustration.
 
 In a second terminal:
 

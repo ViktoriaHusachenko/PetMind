@@ -167,6 +167,31 @@ def _seed_demo_catalog() -> int:
          "category": "Вологий корм", "species": "dog", "price": 119.0, "image_url": "/demo-products/dog-salmon.svg",
          "description": "Демонстраційний товар каталогу. Дані не є комерційною пропозицією.", "ingredients_text": "salmon, pumpkin, rice",
          "protein": 10.0, "fat": 6.0, "is_regular": True, "package_weight_kg": 0.4},
+        {"id": "PETMIND-DEMO-ROYAL-CANIN-STERILISED", "title": "Royal Canin Sterilised 37 — корм для стерилізованих котів", "brand": "Royal Canin",
+         "category": "Сухий корм", "species": "cat", "price": 899.0,
+         "image_url": "https://www.petcorner.rs/cdn/shop/files/royal-canin-sterilised-37-suva-hrana-macke.png?v=1754066639&width=600",
+         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "ingredients_text": "dehydrated poultry protein, maize, wheat gluten, rice, animal fats", "protein": 37.0, "fat": 12.0, "is_regular": True, "package_weight_kg": 2.0},
+        {"id": "PETMIND-DEMO-PURINA-PROPLAN-SALMON", "title": "Purina Pro Plan Adult Salmon — сухий корм для дорослих котів", "brand": "Purina Pro Plan",
+         "category": "Сухий корм", "species": "cat", "price": 799.0,
+         "image_url": "https://www.purina.nl/sites/default/files/2023-06/07613036508315_3_frontplunge.png",
+         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "ingredients_text": "salmon, poultry protein, rice, corn", "protein": 36.0, "fat": 16.0, "is_regular": True, "package_weight_kg": 1.5},
+        {"id": "PETMIND-DEMO-HILLS-CHICKEN", "title": "Hill’s Science Diet Adult Chicken — сухий корм для котів", "brand": "Hill’s Science Diet",
+         "category": "Сухий корм", "species": "cat", "price": 949.0,
+         "image_url": "https://cdn11.bigcommerce.com/s-xfu1s3ki5p/images/stencil/700w/attribute_rule_images/4459_source_1772138542.png",
+         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "ingredients_text": "chicken, brown rice, chicken meal", "protein": 32.0, "fat": 18.0, "is_regular": True, "package_weight_kg": 1.5},
+        {"id": "PETMIND-DEMO-NEXGARD-DOG", "title": "NexGard для собак 4–10 кг (демо-картка)", "brand": "NexGard",
+         "category": "Ветаптека", "species": "dog", "price": 1565.0,
+         "image_url": "https://www.boehringer-ingelheim.com/sites/default/files/Animal_Health/NexGard_EU_Pack_3ct_Medium%20for%20web.png",
+         "description": "Демонстраційна картка ветпрепарату. Ціна-приклад за онлайн-карткою Rozetka; товар і наявність у PetMind не продаються. Перед застосуванням проконсультуйтеся з ветеринаром.",
+         "ingredients_text": "", "protein": None, "fat": None, "is_regular": False, "package_weight_kg": 0.0},
+        {"id": "PETMIND-DEMO-ADVANTAGE-CAT", "title": "Advantage 80 для котів понад 4 кг (демо-картка)", "brand": "Advantage",
+         "category": "Ветаптека", "species": "cat", "price": 221.26,
+         "image_url": "https://cdn.webshopapp.com/shops/43367/files/470992585/advantage-advantage-katze.jpg",
+         "description": "Демонстраційна картка ветпрепарату. Ціна-приклад за онлайн-карткою Pethouse; товар і наявність у PetMind не продаються. Перед застосуванням проконсультуйтеся з ветеринаром.",
+         "ingredients_text": "", "protein": None, "fat": None, "is_regular": False, "package_weight_kg": 0.0},
     ]
     with SessionLocal() as session:
         statement = insert(Product).values(rows)
@@ -219,7 +244,15 @@ def seed(processed_dir: str | Path = ROOT / "data" / "processed", *, demo_only: 
         categories = row.get("categories")
         category_text = " ".join(map(str, categories)) if isinstance(categories, (list, tuple, set)) else str(_value(categories) or "")
         searchable = f"{row.get('title', '')} {category_text}".lower()
-        species = "cat" if any(key in searchable for key in ("cat", "feline", "кіт")) else "dog" if any(key in searchable for key in ("dog", "canine", "собак")) else None
+        species = (
+            "cat" if any(key in searchable for key in ("cat", "feline", "кіт")) else
+            "dog" if any(key in searchable for key in ("dog", "canine", "собак")) else
+            "rabbit" if any(key in searchable for key in ("rabbit", "bunny", "lapin", "крол")) else
+            "bird" if any(key in searchable for key in ("bird", "parrot", "avian", "птах", "папуг")) else
+            "rodent" if any(key in searchable for key in ("rodent", "hamster", "guinea pig", "mouse", "rat", "гризун", "хом'як")) else
+            "reptile" if any(key in searchable for key in ("reptile", "lizard", "turtle", "snake", "рептил", "черепах")) else
+            "fish" if any(key in searchable for key in ("aquarium fish", "ornamental fish", "goldfish", "fish food", "акваріум", "риб")) else None
+        )
         image = _value(row.get("image_url"))
         if image is None and isinstance(row.get("images"), (list, tuple)) and row["images"]:
             first = row["images"][0]
