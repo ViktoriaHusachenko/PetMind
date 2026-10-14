@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt -r backend/requirements.txt
+      # Unit/API tests use fakes; live Gemini and e2e suites are skipped without credentials/API.
+      - run: python -m pytest -q -m "not live and not integration"
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit -p .
+      - run: pnpm build
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose config --quiet
+      - run: docker compose build
+      - name: Start stack and check health
+        run: |
+          docker compose up -d
+          for i in $(seq 1 60); do curl -fs http://localhost:8000/api/health && break; sleep 5; done
+          docker compose exec -T backend python scripts/seed.py --demo-only
+          curl -fs http://localhost:5173/api/allergens
+          curl -fs http://localhost:8000/api/health/llm
+      - if: always()
+        run: docker compose logs --no-color | tail -200

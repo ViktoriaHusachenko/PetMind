@@ -24,13 +24,24 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-petly}:${POSTGRES_PASSWORD:-petly}@db:5432/${POSTGRES_DB:-petly}
-      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
-      LLM_MODEL: ${LLM_MODEL:-}
+      # Gemini (free tier) is the active provider; the others are implemented but disabled.
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      LLM_ENABLED_PROVIDERS: ${LLM_ENABLED_PROVIDERS:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LLM_CHAT_MODEL: ${LLM_CHAT_MODEL:-gemini-flash-lite-latest}
+      LLM_RERANK_MODEL: ${LLM_RERANK_MODEL:-gemini-flash-lite-latest}
+      LLM_CHAT_RPM: ${LLM_CHAT_RPM:-10}
+      LLM_CHAT_RPD: ${LLM_CHAT_RPD:-400}
+      LLM_RERANK_RPM: ${LLM_RERANK_RPM:-5}
+      LLM_RERANK_RPD: ${LLM_RERANK_RPD:-200}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       LLM_CACHE_PATH: ${LLM_CACHE_PATH:-/app/.cache/petrec_llm_cache.json}
+      RECOMMENDATION_TTL_SECONDS: ${RECOMMENDATION_TTL_SECONDS:-600}
+      PETMIND_CORS_ORIGINS: ${PETMIND_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      PETMIND_DEMO_PASSWORD: ${PETMIND_DEMO_PASSWORD:-PetMindDemo2026!}
       PETMIND_AUTH_SECRET: ${PETMIND_AUTH_SECRET:-petmind-docker-development-secret}
       PETMIND_ADMIN_EMAIL: ${PETMIND_ADMIN_EMAIL:-admin@petmind.local}
       PETMIND_ADMIN_PASSWORD: ${PETMIND_ADMIN_PASSWORD:-PetMindAdmin2026!}
@@ -39,6 +50,8 @@ services:
     volumes:
       - ./data:/app/data:ro
       - petly_llm_cache:/app/.cache
+      # multilingual-e5-small weights survive container rebuilds
+      - petmind_hf_cache:/root/.cache/huggingface
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +60,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 45s
+      start_period: 90s
 
   frontend:
     build:
@@ -69,3 +82,4 @@ services:
 volumes:
   petly_pgdata:
   petly_llm_cache:
+  petmind_hf_cache:
