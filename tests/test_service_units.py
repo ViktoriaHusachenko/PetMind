@@ -52,3 +52,13 @@ def test_embedding_backfill_only_embeds_missing_products_once():
     assert len(products[0].embedding) == 384 and model.calls == 1 and session.commits == 1
     assert service.ensure_product_vectors(session, products) == 0 and model.calls == 1
     assert service.rag_embedder().model is model
+
+
+def test_same_day_purchases_merge_into_one_restock():
+    from datetime import date, datetime, timezone
+    from app.service import _purchase_days
+
+    rows = [SimpleNamespace(ts=datetime(2026, 9, 1, 9, tzinfo=timezone.utc), quantity=1),
+            SimpleNamespace(ts=datetime(2026, 10, 1, 9, tzinfo=timezone.utc), quantity=1),
+            SimpleNamespace(ts=datetime(2026, 10, 1, 18, tzinfo=timezone.utc), quantity=2)]
+    assert _purchase_days(rows) == ([date(2026, 9, 1), date(2026, 10, 1)], 3)

@@ -97,9 +97,9 @@ class FinalCardsGuard:
                 continue
             if ctx.service.check_safety(product_id, ctx.pet_id).get("safe") is True:
                 output.append({**row, "safe_badge": True, "_sterilized": is_sterilized_product(basic)})
-        if ctx.sterilized and any(item["_sterilized"] for item in output):
-            # Prefer sterilized-specific food when the catalog has it.
-            output = [item for item in output if item["_sterilized"]]
+        if ctx.sterilized:
+            # Sterilized-specific food first; every verified card stays so the reply and cards agree.
+            output.sort(key=lambda item: not item["_sterilized"])
         for item in output:
             item.pop("_sterilized", None)
         return output

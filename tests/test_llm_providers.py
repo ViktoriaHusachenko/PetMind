@@ -226,3 +226,19 @@ def test_runtime_from_injected_client():
     runtime = LLMRuntime.from_client(MockLLM("x"))
     assert runtime.available and runtime.chat is runtime.rerank
     assert LLMRuntime.from_client(None).status()["state"] == "disabled"
+
+
+def test_limiter_waits_briefly_for_the_minute_window_instead_of_failing():
+    clock = Clock()
+    waits = []
+
+    def sleep(seconds):
+        waits.append(seconds)
+        clock.now += seconds
+
+    limiter = SlidingWindowLimiter(RateLimitSettings(requests_per_minute=1, requests_per_day=10), clock,
+                                   sleep=sleep, max_wait_seconds=8)
+    limiter.acquire()
+    clock.now = 55
+    limiter.acquire()  # the slot frees at t=60, five seconds away
+    assert len(waits) == 1 and 5 <= waits[0] <= 5.1

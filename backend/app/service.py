@@ -80,6 +80,16 @@ def _product_out(product: Product, pet: Pet | None = None) -> dict[str, Any]:
     return value
 
 
+def _purchase_days(rows: list[Purchase]) -> tuple[list[date], int]:
+    """Purchase calendar days (same-day rows merged) and the pack count of the latest day."""
+    quantities: dict[date, int] = {}
+    for row in rows:
+        day = row.ts.date() if isinstance(row.ts, datetime) else row.ts
+        quantities[day] = quantities.get(day, 0) + max(1, int(row.quantity or 1))
+    days = sorted(quantities)
+    return days, quantities[days[-1]]
+
+
 def _search_fields(product: Product) -> dict[str, str | None]:
     return {"title": product.title, "brand": product.brand, "category": product.category,
             "description": product.description, "ingredients_text": product.ingredients_text}
@@ -603,21 +613,24 @@ class APIService(TokenAuthMixin):
                 else:
                     category_key = "dry_food"
                 lead_days, importance = CATEGORY_RULES.get(category_key, CATEGORY_RULES["default"])
-                dates = [purchase.ts for purchase in rows]
-                last = rows[-1]
+                # Same-day purchases are one restock of several packs (BUG-032).
+                dates, last_quantity = _purchase_days(rows)
                 for pet in session.scalars(select(Pet).where(Pet.user_id == uid)).all():
                     stock_days = None
                     if category_key == "dry_food" and pet.weight_kg and product.energy_kcal_per_kg and product.package_weight_kg:
                         try:
                             stock_days = estimate_food_stock_days(
                                 float(pet.weight_kg), pet.species, product.energy_kcal_per_kg,
-                                product.package_weight_kg, last.quantity, pet.lifestyle,
+                                product.package_weight_kg, last_quantity, pet.lifestyle,
                             )
                         except ValueError:
                             logger.warning("step=reminder_stock_estimate_invalid product_id=%s pet_id=%s", product_id, pet.id)
                     expected = predict_purchase_date(dates, stock_days=stock_days, alpha=0.3)
                     if expected is None:
                         continue
+                    if stock_days is None and last_quantity > 1:
+                        # Without a stock estimate the interval covers one pack; n packs last n times longer.
+                        expected = dates[-1] + (expected - dates[-1]) * last_quantity
                     reminder_date = expected - timedelta(days=lead_days)
                     priority = reminder_priority(expected, current, importance)
                     days_left = (expected - current).days

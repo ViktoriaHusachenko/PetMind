@@ -21,6 +21,10 @@ logger = logging.getLogger("petmind.api")
 
 
 def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> FastAPI:
+    settings = get_settings()
+    if settings.is_production and (problems := settings.production_problems()):
+        # Refuse to serve real users with demo credentials or an unsigned-token secret.
+        raise RuntimeError("Unsafe production configuration: " + "; ".join(problems))
     if service is None:
         from .service import APIService
         service = APIService()
@@ -33,11 +37,13 @@ def create_app(service: Any | None = None, *, enable_scheduler: bool = True) -> 
         if scheduler is not None:
             scheduler.shutdown(wait=False)
 
-    app = FastAPI(title="PetMind API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="PetMind API", version="1.0.0", lifespan=lifespan,
+                  docs_url=None if settings.is_production else "/docs",
+                  redoc_url=None if settings.is_production else "/redoc")
     app.state.service = service
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=list(get_settings().cors_origins),
+        allow_origins=list(settings.cors_origins),
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-User-Id"],

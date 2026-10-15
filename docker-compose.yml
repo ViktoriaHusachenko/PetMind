@@ -7,7 +7,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-petly}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-petly}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Bound to localhost only: the database is never exposed publicly.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - petly_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -42,6 +43,7 @@ services:
       RECOMMENDATION_TTL_SECONDS: ${RECOMMENDATION_TTL_SECONDS:-600}
       PETMIND_CORS_ORIGINS: ${PETMIND_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       PETMIND_DEMO_PASSWORD: ${PETMIND_DEMO_PASSWORD:-PetMindDemo2026!}
+      PETMIND_ENV: ${PETMIND_ENV:-development}
       PETMIND_AUTH_SECRET: ${PETMIND_AUTH_SECRET:-petmind-docker-development-secret}
       PETMIND_ADMIN_EMAIL: ${PETMIND_ADMIN_EMAIL:-admin@petmind.local}
       PETMIND_ADMIN_PASSWORD: ${PETMIND_ADMIN_PASSWORD:-PetMindAdmin2026!}
@@ -51,7 +53,7 @@ services:
       - ./data:/app/data:ro
       - petly_llm_cache:/app/.cache
       # multilingual-e5-small weights survive container rebuilds
-      - petmind_hf_cache:/root/.cache/huggingface
+      - petmind_hf_cache:/home/app/.cache/huggingface
     depends_on:
       db:
         condition: service_healthy

@@ -49,3 +49,12 @@ def test_demo_catalog_is_large_unique_and_marked_as_demo():
     assert len(rows) >= 40 and len({row["id"] for row in rows}) == len(rows)
     assert {row["species"] for row in rows} == {"cat", "dog"}
     assert all(row["brand"] == BRAND and row["id"].startswith("PETMIND-DEMO-") for row in rows)
+
+
+def test_production_rejects_demo_credentials_and_localhost_cors():
+    unsafe = Settings.from_env({"PETMIND_ENV": "production"})
+    assert unsafe.is_production and len(unsafe.production_problems()) == 3
+    safe = Settings.from_env({"PETMIND_ENV": "production", "PETMIND_AUTH_SECRET": "x" * 40,
+                              "PETMIND_ADMIN_PASSWORD": "a-strong-admin-password",
+                              "PETMIND_CORS_ORIGINS": "https://petmind.example"})
+    assert safe.production_problems() == []

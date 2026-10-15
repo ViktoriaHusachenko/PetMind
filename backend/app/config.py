@@ -66,9 +66,14 @@ class LLMSettings(BaseModel):
     rerank_limits: RateLimitSettings = RateLimitSettings(requests_per_minute=5, requests_per_day=200)
 
 
+DEFAULT_ADMIN_PASSWORD = "PetMindAdmin2026!"
+MIN_SECRET_LENGTH = 32
+
+
 class Settings(BaseModel):
     model_config = ConfigDict(frozen=True)
 
+    environment: str = "development"
     database_url: str = "postgresql+psycopg://petly:petly@localhost:5432/petly"
     api_port: int = 8000
     auth_secret: str | None = None
@@ -78,6 +83,21 @@ class Settings(BaseModel):
     cors_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
     recommendation_ttl_seconds: int = 600
     llm: LLMSettings = LLMSettings()
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    def production_problems(self) -> list[str]:
+        """Settings that are acceptable for a local demo but unsafe on a public server."""
+        problems = []
+        if not self.auth_secret or len(self.auth_secret) < MIN_SECRET_LENGTH or "replace-with" in self.auth_secret:
+            problems.append(f"PETMIND_AUTH_SECRET must be a random value of at least {MIN_SECRET_LENGTH} characters")
+        if self.admin_password == DEFAULT_ADMIN_PASSWORD:
+            problems.append("PETMIND_ADMIN_PASSWORD still has the demo default")
+        if any("localhost" in origin or "127.0.0.1" in origin for origin in self.cors_origins):
+            problems.append("PETMIND_CORS_ORIGINS must list the public site origin, not localhost")
+        return problems
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "Settings":
@@ -108,11 +128,12 @@ class Settings(BaseModel):
         if url.startswith("postgresql://"):
             url = url.replace("postgresql://", "postgresql+psycopg://", 1)
         return cls(
+            environment=(env.get("PETMIND_ENV") or "development").strip().lower(),
             database_url=url,
             api_port=_int(env, "API_PORT", 8000),
             auth_secret=env.get("PETMIND_AUTH_SECRET") or None,
             admin_email=(env.get("PETMIND_ADMIN_EMAIL") or "admin@petmind.local").strip().casefold(),
-            admin_password=env.get("PETMIND_ADMIN_PASSWORD") or "PetMindAdmin2026!",
+            admin_password=env.get("PETMIND_ADMIN_PASSWORD") or DEFAULT_ADMIN_PASSWORD,
             demo_password=env.get("PETMIND_DEMO_PASSWORD") or "PetMindDemo2026!",
             cors_origins=tuple(o.strip() for o in (env.get("PETMIND_CORS_ORIGINS") or "").split(",") if o.strip())
             or cls.model_fields["cors_origins"].default,

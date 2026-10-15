@@ -54,24 +54,35 @@ class LLMClientDecorator(LLMClient):
 class SlidingWindowLimiter:
     """Thread-safe per-minute and per-day request budget (client-side view of a free tier)."""
 
-    def __init__(self, limits: RateLimitSettings, clock: Clock = time.monotonic) -> None:
-        self.limits, self.clock = limits, clock
+    def __init__(self, limits: RateLimitSettings, clock: Clock = time.monotonic,
+                 sleep: Callable[[float], None] = time.sleep, max_wait_seconds: float = 8.0) -> None:
+        self.limits, self.clock, self.sleep = limits, clock, sleep
+        # A full minute window that frees up soon is waited out; the daily budget always fails fast.
+        self.max_wait_seconds = max_wait_seconds
         self._minute: deque[float] = deque()
         self._day: deque[float] = deque()
         self._lock = threading.Lock()
 
+    def _prune(self, now: float) -> None:
+        for window, span in ((self._minute, 60.0), (self._day, 86_400.0)):
+            while window and now - window[0] >= span:
+                window.popleft()
+
     def acquire(self) -> None:
-        with self._lock:
-            now = self.clock()
-            for window, span in ((self._minute, 60.0), (self._day, 86_400.0)):
-                while window and now - window[0] >= span:
-                    window.popleft()
-            if self.limits.requests_per_minute and len(self._minute) >= self.limits.requests_per_minute:
-                raise LLMQuotaExceeded("Client-side per-minute LLM budget exhausted")
-            if self.limits.requests_per_day and len(self._day) >= self.limits.requests_per_day:
-                raise LLMQuotaExceeded("Client-side daily LLM budget exhausted")
-            self._minute.append(now)
-            self._day.append(now)
+        while True:
+            with self._lock:
+                now = self.clock()
+                self._prune(now)
+                if self.limits.requests_per_day and len(self._day) >= self.limits.requests_per_day:
+                    raise LLMQuotaExceeded("Client-side daily LLM budget exhausted")
+                if not self.limits.requests_per_minute or len(self._minute) < self.limits.requests_per_minute:
+                    self._minute.append(now)
+                    self._day.append(now)
+                    return
+                wait = 60.0 - (now - self._minute[0]) + 0.05
+                if wait > self.max_wait_seconds:
+                    raise LLMQuotaExceeded("Client-side per-minute LLM budget exhausted")
+            self.sleep(wait)
 
     def usage(self) -> dict[str, int]:
         with self._lock:
