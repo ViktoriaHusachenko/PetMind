@@ -194,8 +194,12 @@ class RecommendationPipeline:
             return []
         stage_started = time.perf_counter()
         content_embeddings = self._product_embeddings()
+        own_history = self.interactions
+        if "user_id" in own_history:
+            # The preference vector reflects this user's history only; other users' rows feed CF.
+            own_history = own_history.loc[own_history["user_id"].astype(str) == str(user_id)]
         user_vector = build_user_preference_vector(
-            self.interactions, content_embeddings, profile=profile_text,
+            own_history, content_embeddings, profile=profile_text,
             embedder=self.product_embedder,
             half_life_days=options.time_decay_half_life_days or 1e15,
         )

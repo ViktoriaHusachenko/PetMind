@@ -32,6 +32,7 @@ from .db.models import Event, KBChunk, Pet, Product, ProductIngredient, Purchase
 
 logger = logging.getLogger("petmind.api")
 PAGE_SIZE = 24
+MAX_CF_INTERACTIONS = 50_000
 
 
 def _uid(value: str | uuid.UUID) -> uuid.UUID:
@@ -412,7 +413,8 @@ class APIService(TokenAuthMixin):
         if cached and cached[0] > now:
             return cached[1]
         user = session.get(User, user_id)
-        purchases = session.scalars(select(Purchase).where(Purchase.user_id == user_id).order_by(Purchase.ts)).all()
+        # All users' purchases feed collaborative filtering (BUG-025); ids stay opaque UUIDs.
+        purchases = session.scalars(select(Purchase).order_by(Purchase.ts.desc()).limit(MAX_CF_INTERACTIONS)).all()
         products_db = session.scalars(select(Product)).all()
         self._timed("embedding_backfill", self.embeddings.ensure_product_vectors, session, products_db)
         evaluator = default_evaluator()
@@ -429,7 +431,7 @@ class APIService(TokenAuthMixin):
                 "price": _float(product.price), "image_url": product.image_url})
             if product.embedding is not None:
                 item_vectors[product.id] = np.asarray(product.embedding, dtype=np.float32)
-        interactions = pd.DataFrame([{"user_id": str(user_id), "parent_asin": purchase.product_id,
+        interactions = pd.DataFrame([{"user_id": str(purchase.user_id), "parent_asin": purchase.product_id,
             "rating": purchase.rating if purchase.rating is not None else 5.0,
             "timestamp": _iso_days(purchase.ts)} for purchase in purchases],
             columns=["user_id", "parent_asin", "rating", "timestamp"])
