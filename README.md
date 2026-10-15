@@ -28,6 +28,10 @@ docker compose exec backend python scripts/seed.py --demo-only
 
 Open the app at <http://localhost:5173>, the API at <http://localhost:8000/api/health>, the LLM state at <http://localhost:8000/api/health/llm> and API docs at <http://localhost:8000/docs>. Volumes: `petly_pgdata` (database), `petly_llm_cache` (LLM response cache), `petmind_hf_cache` (embedding model weights). `docker compose down -v` removes them. The GitHub Actions workflow `.github/workflows/ci.yml` builds and smoke-tests the stack.
 
+## Production mode
+
+Set `PETMIND_ENV=production` for a public deployment. The API then refuses to start while `PETMIND_AUTH_SECRET` is shorter than 32 characters, `PETMIND_ADMIN_PASSWORD` keeps the demo default, or `PETMIND_CORS_ORIGINS` lists localhost; `/docs` is hidden. The backend container runs as an unprivileged user, PostgreSQL is published on `127.0.0.1` only, and nginx adds security headers. Keep one API worker: LLM budgets, the circuit breaker and caches are per process.
+
 ## Demo accounts
 
 `seed.py --demo-only` is idempotent and creates 51 clearly labelled demo goods (with ingredient rows, embeddings and knowledge-base chunks), purchase history for reminders and these logins:

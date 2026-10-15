@@ -6,7 +6,10 @@
 frontend/node_modules
 frontend/dist
 .cache
-data
+# Research data stays out of the image; the safety dictionaries are part of the app.
+data/*
+!data/ingredient_normalization.csv
+!data/ingredient_patterns.csv
 .env
 .env.*
 !.env.example
