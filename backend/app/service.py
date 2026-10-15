@@ -421,6 +421,9 @@ class APIService(TokenAuthMixin):
         product_rows = []
         item_vectors = {}
         for product in products_db:
+            # Only goods for this pet's species enter the pipeline; the core filter covers cats and dogs only.
+            if product.species != pet.species:
+                continue
             product_rows.append({"parent_asin": product.id, "title": product.title, "brand": product.brand,
                 "categories": product.category, "description": product.description, "species": product.species,
                 "ingredients_text": evaluator.normalizer.canonical_text(product.ingredients_text), "proteins_100g": product.protein,
@@ -454,7 +457,7 @@ class APIService(TokenAuthMixin):
             return "adult"
         years = (date.today() - birth_date).days / 365.2425
         if years < 1:
-            return "kitten" if species == "cat" else "puppy"
+            return {"cat": "kitten", "dog": "puppy"}.get(species, "young")
         return "senior" if years >= 8 else "adult"
 
     def recommend(self, user_id: str, pet_id: str, *, k: int = 10, use_llm: bool = True) -> list[dict[str, Any]]:

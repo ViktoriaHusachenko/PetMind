@@ -41,14 +41,18 @@ def test_password_hasher_round_trip_and_rejects_garbage():
     assert not hasher.verify("секрет", None) and not hasher.verify("секрет", "md5$1$x$y")
 
 
-def test_demo_catalog_is_large_unique_and_marked_as_demo():
+def test_store_catalog_covers_species_pharmacy_and_real_photos():
     sys.path.insert(0, str(ROOT / "backend" / "scripts"))
     from demo_catalog import BRAND, demo_catalog
 
     rows = demo_catalog()
-    assert len(rows) >= 40 and len({row["id"] for row in rows}) == len(rows)
-    assert {row["species"] for row in rows} == {"cat", "dog"}
-    assert all(row["brand"] == BRAND and row["id"].startswith("PETMIND-DEMO-") for row in rows)
+    assert len(rows) >= 90 and len({row["id"] for row in rows}) == len(rows)
+    assert {"cat", "dog", "rabbit", "rodent", "bird", "fish"} <= {row["species"] for row in rows}
+    assert sum(row["category"].startswith("Ветаптека") for row in rows) >= 20
+    for row in rows:
+        assert row["brand"] == BRAND and row["id"].startswith("PETMIND-DEMO-")
+        assert "емо" not in row["description"] and row["description"]
+        assert (ROOT / "frontend" / "public" / row["image_url"].lstrip("/")).is_file(), row["image_url"]
 
 
 def test_production_rejects_demo_credentials_and_localhost_cors():

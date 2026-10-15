@@ -31,12 +31,12 @@ class AuthResponse(BaseModel):
     access_token: str
 
 
-Species = Literal["cat", "dog"]
+Species = Literal["cat", "dog", "rabbit", "bird", "rodent", "reptile", "fish", "other"]
 
 
 class PetCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
-    # Only species with a catalog and a species filter are accepted (BUG-012).
+    # A closed list: recommendations filter the catalog by exactly this value (BUG-012).
     species: Species
     birth_date: date | None = None
     breed: str | None = None

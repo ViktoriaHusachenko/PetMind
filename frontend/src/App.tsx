@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, NavLink, Route, Routes, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ApiError, apiRequest, useApiResource } from "./api/client";
 import type { AllergenOption, LLMHealth, AuthResponse, ChatMessage, ChatResponse, Pet, PetInput, Product, ProductDetail, ProductPage, RecommendationItem, ReminderItem, Stats, User } from "./api/types";
 
 type IconName = "search" | "user" | "heart" | "cart" | "menu" | "spark" | "arrow" | "check" | "shield" | "truck" | "box" | "refresh" | "close" | "plus" | "send" | "paw";
+const SPECIES_LABELS: Record<string, string> = { cat: "Котам", dog: "Собакам", rabbit: "Кролям", bird: "Птахам", rodent: "Гризунам", fish: "Рибам", reptile: "Рептиліям" };
+// NavLink ignores the query string, so every catalog link looked active at once.
+function CatalogLink({ species, children }: { species?: string; children: React.ReactNode }) {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const active = location.pathname === "/catalog" && (params.get("species") || "") === (species || "") && !params.get("category") && !params.get("sale") && !params.get("brand");
+  return <Link className={active ? "active" : ""} to={species ? `/catalog?species=${species}` : "/catalog"}>{children}</Link>;
+}
+
 type StoreProduct = { id?: string; item_id?: string; title: string; brand?: string | null; category?: string | null; species?: string | null; price?: number | null; image_url?: string | null; safe?: boolean | null; danger_reason?: string | null; match_percent?: number | null; safe_badge?: boolean; reason?: string; composition_summary?: string[]; cart_pet_id?: string };
 type CartLine = { product: StoreProduct; pet_id: string };
 function productId(product: StoreProduct): string { return product.item_id || product.id || ""; }
@@ -61,7 +70,7 @@ function ProductCard({ product, index = 0, onAdd, onDismiss, footer }: { product
     <span className={`product-badge ${safe === false ? "product-badge-danger" : ""}`}>{safe === true ? "Без алергенів" : safe === false ? "Небезпечно" : "PetMind"}</span>
     <button className={`heart-button ${liked ? "liked" : ""}`} onClick={() => setLiked(!liked)} aria-label="Додати до обраного"><Icon name="heart" size={17} /></button>
     {match > 0 && <span className="match-badge" title="Показник збігу профілю, складу й історії покупок; це не ймовірність і не медична оцінка."><Icon name="spark" size={11} /> {match}% збігу</span>}
-  </div><div className="px-1 pt-4"><div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#849085]">{product.species === "cat" ? "Котам" : product.species === "dog" ? "Собакам" : product.category || "Тваринам"}</span>
+  </div><div className="px-1 pt-4"><div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#849085]">{SPECIES_LABELS[product.species || ""] || product.category || "Тваринам"}</span>
     {safe !== null && safe !== undefined && <span className={`text-xs font-bold ${safe ? "text-[#566259]" : "text-[#b33e2f]"}`}>{safe ? "Перевірено" : product.danger_reason || "Є ризик алергену"}</span>}</div>
     <Link className="mt-2 block text-[15px] font-extrabold tracking-[-0.02em]" to={`/products/${encodeURIComponent(id)}`}>{product.title}</Link>
     <p className="mt-1 text-xs text-[#7d867f]">{product.brand || product.category || "Товар для улюбленця"}</p>
@@ -99,7 +108,7 @@ function App() {
       <Link className="logo" to="/"><span className="logo-mark"><Icon name="paw" size={22} /></span><span>PetMind<span className="text-[#e26f45]">.</span></span></Link>
       <div className="search-shell"><Icon name="search" size={18} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Знайти корм, бренд або категорію..." aria-label="Пошук товарів" /><button onClick={() => setSearch("")} aria-label="Очистити пошук"><Icon name="close" size={15} /></button></div>
       <div className="header-actions">{authUser ? <><Link className="secondary-button" to="/account">{authUser.display_name || "Мій кабінет"}</Link><button className="secondary-button" onClick={() => { localStorage.removeItem("petmind_access_token"); localStorage.removeItem("petmind_auth_user"); setAuthUser(null); setUserId(""); setSelectedPetId(""); setCart([]); window.location.assign("/"); }}>Вийти</button></> : <Link className="secondary-button" to="/auth">Вхід / реєстрація</Link>}<Link className="cart-button" to="/cart"><Icon name="cart" /><span className="hidden sm:inline">Кошик</span>{cart.length > 0 && <b>{cart.length}</b>}</Link></div>
-    </div><div className="nav-row"><nav className="container"><NavLink to="/" end>Головна</NavLink><NavLink to="/catalog">Каталог</NavLink><NavLink to="/catalog?species=dog">Собакам</NavLink><NavLink to="/catalog?species=cat">Котам</NavLink><NavLink to="/catalog?species=rabbit">Кролям</NavLink><Link to="/pharmacy">Ветаптека</Link><NavLink to="/brands">Бренди</NavLink><NavLink to="/recommendations"><Icon name="spark" size={13} /> AI-рекомендації</NavLink><Link className="ml-auto hidden xl:block" to="/catalog?sale=true">Акції</Link><NavLink to="/account">Кабінет</NavLink>{selectedUser?.is_admin && <NavLink to="/admin">Адмін</NavLink>}</nav></div></header>
+    </div><div className="nav-row"><nav className="container"><NavLink to="/" end>Головна</NavLink><CatalogLink>Каталог</CatalogLink><CatalogLink species="dog">Собакам</CatalogLink><CatalogLink species="cat">Котам</CatalogLink><CatalogLink species="rabbit">Кролям</CatalogLink><Link to="/pharmacy">Ветаптека</Link><NavLink to="/brands">Бренди</NavLink><NavLink to="/recommendations"><Icon name="spark" size={13} /> AI-рекомендації</NavLink><Link className="ml-auto hidden xl:block" to="/catalog?sale=true">Акції</Link><NavLink to="/account">Кабінет</NavLink>{selectedUser?.is_admin && <NavLink to="/admin">Адмін</NavLink>}</nav></div></header>
     {usersState.loading && <div className="container py-3"><SkeletonLine /></div>}
     {usersState.error && <ErrorNotice message={usersState.error} />}
     {petsState.error && <ErrorNotice message={petsState.error} />}
@@ -113,6 +122,7 @@ function App() {
       <Route path="/account" element={userId ? <AccountPage userId={userId} pets={pets} selectedPetId={selectedPet?.id || ""} setSelectedPetId={setSelectedPetId} refreshPets={petsState.reload} /> : <Navigate to="/auth" replace />} />
       <Route path="/cart" element={<CartPage items={cart} setItems={setCart} userId={userId} pets={pets} />} />
       <Route path="/brands" element={<BrandsPage addToCart={addToCart} />} />
+      <Route path="/credits" element={<CreditsPage />} />
       <Route path="/pharmacy" element={<CatalogPage addToCart={addToCart} search={search} petId={selectedPet?.id} initialCategory="Ветаптека" />} />
       <Route path="/about" element={<InfoPage title="Про PetMind" text="PetMind — навчальний зоомаркет із каталогом товарів, профілями улюбленців і детермінованою перевіркою складу. Інформація про товари у демонстраційному каталозі може бути прикладом." />} />
       <Route path="/delivery" element={<InfoPage title="Доставка й оплата" text="Це демонстраційний проєкт: реальна оплата та доставка не виконуються. Замовлення зберігаються у локальній базі даних для перевірки функцій застосунку." />} />
@@ -146,14 +156,14 @@ function HomePage({ userId, pet, pets, setSelectedPetId, addToCart, search }: { 
 
 function CatalogPage({ addToCart, search, petId, initialCategory }: { addToCart: (p: StoreProduct) => void; search: string; petId?: string; initialCategory?: string }) {
   const [params, setParams] = useSearchParams(); const [category, setCategory] = useState(params.get("species") || initialCategory || (params.get("sale") ? "sale" : params.get("brand") ? "brand" : "all")); const [page, setPage] = useState(1); const [brand, setBrand] = useState(params.get("brand") === "all" ? "" : params.get("brand") || "");
-  useEffect(() => { setCategory(params.get("species") || (params.get("sale") ? "sale" : params.get("brand") ? "brand" : "all")); }, [params]);
+  useEffect(() => { setCategory(params.get("species") || (params.get("sale") ? "sale" : params.get("brand") ? "brand" : params.get("category") === "Ветаптека" ? "Ветаптека" : initialCategory || "all")); }, [params, initialCategory]);
   useEffect(() => { setBrand(params.get("brand") === "all" ? "" : params.get("brand") || ""); }, [params]);
   const query = new URLSearchParams({ page: String(page), sort: "relevance" }); if (search) query.set("q", search); if (!["all", "brand", "sale", "Ветаптека"].includes(category)) query.set("species", category); if (category === "brand" && brand) query.set("brand", brand); if (petId) query.set("pet_id", petId); if (category === "Ветаптека") query.set("category", "Ветаптека"); else if (params.get("category")) query.set("category", params.get("category")!);
   const productsState = useApiResource<ProductPage>(`/products?${query}`, `${category}:${brand}:${page}:${petId || ""}`);
   const products = productsState.data?.items || [];
   const total = productsState.data?.total || 0;
-  const filters = [{ label: "Усі товари", value: "all" }, { label: "Собакам", value: "dog" }, { label: "Котам", value: "cat" }, { label: "Кролям", value: "rabbit" }, { label: "Птахам", value: "bird" }, { label: "Гризунам", value: "rodent" }, { label: "Рептиліям", value: "reptile" }, { label: "Рибам", value: "fish" }, { label: "Бренди", value: "brand" }, { label: "Акції", value: "sale" }];
-  return <main className="container section-space"><div className="section-heading products-heading"><div><span className="section-overline">Каталог PetMind</span><h1>Товари для улюбленців</h1><p>{total ? `${total} товарів` : "Знайдіть потрібне для свого улюбленця"}</p></div><div className="filter-tabs">{filters.map((filter) => <button key={filter.value} className={category === filter.value ? "active" : ""} onClick={() => { setCategory(filter.value); setPage(1); if (filter.value === "dog" || filter.value === "cat") setParams({ species: filter.value }); else if (filter.value === "brand") setParams({ brand: "all" }); else if (filter.value === "sale") setParams({ sale: "true" }); else setParams({}); }}>{filter.label}</button>)}</div></div>{category === "brand" && <input className="form-control mb-6" aria-label="Фільтр бренду" placeholder="Введіть бренд" value={brand} onChange={(event) => setBrand(event.target.value)} />}{category === "sale" && <div className="ai-banner mb-8"><div className="ai-copy"><span className="ai-kicker">Акції PetMind</span><h2>Спеціальні пропозиції</h2><p>Акційні товари з’являться в каталозі, щойно будуть доступні.</p></div></div>}{productsState.loading ? <SkeletonGrid /> : productsState.error ? <ErrorNotice message={productsState.error} /> : category !== "sale" && <ProductGrid products={products} addToCart={addToCart} />}<div className="mt-8 flex justify-center gap-3"><button className="secondary-button" disabled={page <= 1} onClick={() => setPage(page - 1)}>Назад</button><button className="secondary-button" disabled={products.length === 0 || page * 24 >= total} onClick={() => setPage(page + 1)}>Далі</button></div></main>;
+  const filters = [{ label: "Усі товари", value: "all" }, { label: "Собакам", value: "dog" }, { label: "Котам", value: "cat" }, { label: "Кролям", value: "rabbit" }, { label: "Птахам", value: "bird" }, { label: "Гризунам", value: "rodent" }, { label: "Рибам", value: "fish" }, { label: "Ветаптека", value: "Ветаптека" }, { label: "Бренди", value: "brand" }, { label: "Акції", value: "sale" }];
+  return <main className="container section-space"><div className="section-heading products-heading"><div><span className="section-overline">Каталог PetMind</span><h1>Товари для улюбленців</h1><p>{total ? `${total} товарів` : "Знайдіть потрібне для свого улюбленця"}</p></div><div className="filter-tabs">{filters.map((filter) => <button key={filter.value} className={category === filter.value ? "active" : ""} onClick={() => { setCategory(filter.value); setPage(1); if (filter.value in SPECIES_LABELS) setParams({ species: filter.value }); else if (filter.value === "brand") setParams({ brand: "all" }); else if (filter.value === "sale") setParams({ sale: "true" }); else if (filter.value === "Ветаптека") setParams({ category: "Ветаптека" }); else setParams({}); }}>{filter.label}</button>)}</div></div>{category === "brand" && <input className="form-control mb-6" aria-label="Фільтр бренду" placeholder="Введіть бренд" value={brand} onChange={(event) => setBrand(event.target.value)} />}{category === "sale" && <div className="ai-banner mb-8"><div className="ai-copy"><span className="ai-kicker">Акції PetMind</span><h2>Спеціальні пропозиції</h2><p>Акційні товари з’являться в каталозі, щойно будуть доступні.</p></div></div>}{productsState.loading ? <SkeletonGrid /> : productsState.error ? <ErrorNotice message={productsState.error} /> : category !== "sale" && <ProductGrid products={products} addToCart={addToCart} />}<div className="mt-8 flex justify-center gap-3"><button className="secondary-button" disabled={page <= 1} onClick={() => setPage(page - 1)}>Назад</button><button className="secondary-button" disabled={products.length === 0 || page * 24 >= total} onClick={() => setPage(page + 1)}>Далі</button></div></main>;
 }
 
 function ProductPage({ pet, addToCart }: { pet?: Pet; addToCart: (p: StoreProduct) => void }) {
@@ -261,6 +271,25 @@ function RecommendationCard({ item, petId, index, addToCart, onDismiss }: { item
   return <ProductCard product={product} index={index} onAdd={addToCart} onDismiss={onDismiss} footer={<div className="recommendation-extra"><p>{item.reason}</p><div className="ingredient-list">{ingredients?.length ? ingredients.slice(0, 5).map((ingredient) => <span className={ingredient.is_allergen ? "ingredient-highlight" : "ingredient-chip"} key={`${ingredient.position}-${ingredient.name}`}>{ingredient.name}</span>) : item.composition_summary.map((ingredient, ingredientIndex) => <span className="ingredient-chip" key={`${ingredient}-${ingredientIndex}`}>{ingredient}</span>)}</div></div>} />;
 }
 
+// Renders the assistant's light formatting (paragraphs, bullet lists, **bold**) without raw markdown symbols.
+function ChatText({ text }: { text: string }) {
+  const inline = (line: string, key: string) => line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, index) =>
+    part.startsWith("**") && part.endsWith("**") ? <strong key={`${key}-${index}`}>{part.slice(2, -2)}</strong> : <span key={`${key}-${index}`}>{part.replace(/\*\*|__/g, "").replace(/^#+\s*/, "")}</span>);
+  const blocks: { list: boolean; lines: string[] }[] = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) { blocks.push({ list: false, lines: [] }); continue; }
+    const item = /^(?:[*\-•]|\d+[.)])\s+(.*)$/.exec(line);
+    const last = blocks[blocks.length - 1];
+    if (item) { if (last && last.list) last.lines.push(item[1]); else blocks.push({ list: true, lines: [item[1]] }); }
+    else if (last && !last.list && last.lines.length) last.lines.push(line);
+    else blocks.push({ list: false, lines: [line] });
+  }
+  return <>{blocks.filter((block) => block.lines.length).map((block, index) => block.list
+    ? <ul className="chat-list" key={index}>{block.lines.map((line, i) => <li key={i}>{inline(line, `${index}-${i}`)}</li>)}</ul>
+    : <p className="chat-paragraph" key={index}>{block.lines.map((line, i) => <span key={i}>{i > 0 && <br />}{inline(line, `${index}-${i}`)}</span>)}</p>)}</>;
+}
+
 function ChatWidget({ userId, petId, addToCart }: { userId: string; petId: string; addToCart: (p: StoreProduct) => void }) {
   const [open, setOpen] = useState(false); const [messages, setMessages] = useState<ChatMessage[]>([]); const [text, setText] = useState(""); const [products, setProducts] = useState<RecommendationItem[]>([]); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const [mode, setMode] = useState<ChatResponse["mode"] | null>(null);
@@ -274,7 +303,7 @@ function ChatWidget({ userId, petId, addToCart }: { userId: string; petId: strin
     catch (requestError) { setError(requestError instanceof ApiError && requestError.status === 401 ? "Увійдіть, щоб спілкуватися з асистентом." : requestError instanceof Error ? requestError.message : "Не вдалося надіслати повідомлення."); setMessages(messages); setText(content); }
     finally { setBusy(false); }
   }
-  return <div className="chat-widget"><button className="chat-toggle primary-button" onClick={() => setOpen((value) => !value)}><Icon name="spark" size={17} /> Спитати PetMind AI</button>{open && <section className="chat-panel" aria-label="Чат PetMind AI"><header><div><b>PetMind AI</b>{statusLabel && <small className={`chat-status ${assistantOnline ? "online" : "fallback"}`} role="status">{statusLabel}</small>}</div><button className="icon-button" onClick={() => setOpen(false)} aria-label="Закрити чат"><Icon name="close" /></button></header><div className="chat-messages">{messages.length === 0 && <p>Запитайте про товари, склад або рекомендації.</p>}{messages.map((message, index) => <p className={`chat-bubble ${message.role}`} key={`${message.role}-${index}`}>{message.content}</p>)}{busy && <p className="chat-typing" aria-live="polite">PetMind AI думає…</p>}{error && <ErrorNotice message={error} />}{products.length > 0 && <div className="chat-products"><small>Картки перевірено за профілем тварини.</small>{products.map((item, index) => <ProductCard key={item.item_id} product={{ ...item, id: item.item_id }} index={index} onAdd={addToCart} />)}</div>}</div><form onSubmit={send}><input value={text} onChange={(event) => setText(event.target.value)} placeholder={petId ? "Ваше запитання…" : "Спочатку оберіть тварину"} disabled={!petId || busy} /><button className="add-button" aria-label="Надіслати" disabled={!petId || busy || !text.trim()}><Icon name="send" size={17} /></button></form></section>}</div>;
+  return <div className="chat-widget"><button className="chat-toggle primary-button" onClick={() => setOpen((value) => !value)}><Icon name="spark" size={17} /> Спитати PetMind AI</button>{open && <section className="chat-panel" aria-label="Чат PetMind AI"><header><div><b>PetMind AI</b>{statusLabel && <small className={`chat-status ${assistantOnline ? "online" : "fallback"}`} role="status">{statusLabel}</small>}</div><button className="icon-button" onClick={() => setOpen(false)} aria-label="Закрити чат"><Icon name="close" /></button></header><div className="chat-messages">{messages.length === 0 && <p>Запитайте про товари, склад або рекомендації.</p>}{messages.map((message, index) => <div className={`chat-bubble ${message.role}`} key={`${message.role}-${index}`}>{message.role === "assistant" ? <ChatText text={message.content} /> : message.content}</div>)}{busy && <p className="chat-typing" aria-live="polite">PetMind AI думає…</p>}{error && <ErrorNotice message={error} />}{products.length > 0 && <div className="chat-products"><small>Картки перевірено за профілем тварини.</small>{products.map((item, index) => <ProductCard key={item.item_id} product={{ ...item, id: item.item_id }} index={index} onAdd={addToCart} />)}</div>}</div><form onSubmit={send}><input value={text} onChange={(event) => setText(event.target.value)} placeholder={petId ? "Ваше запитання…" : "Спочатку оберіть тварину"} disabled={!petId || busy} /><button className="add-button" aria-label="Надіслати" disabled={!petId || busy || !text.trim()}><Icon name="send" size={17} /></button></form></section>}</div>;
 }
 
 function SkeletonLine() { return <div className="skeleton-line" aria-label="Завантаження" />; }
@@ -291,12 +320,12 @@ function AdminCatalogPage() {
   const selectedProductState = useApiResource<ProductDetail>(!isNew && selectedId ? `/products/${encodeURIComponent(selectedId)}` : null, selectedId);
   const selected = selectedProductState.data;
   const [id, setId] = useState(""); const [title, setTitle] = useState(""); const [brand, setBrand] = useState(""); const [category, setCategory] = useState("");
-  const [species, setSpecies] = useState<"cat" | "dog">("cat"); const [price, setPrice] = useState("");
+  const [species, setSpecies] = useState<string>("cat"); const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState(""); const [description, setDescription] = useState(""); const [ingredients, setIngredients] = useState("");
   const [message, setMessage] = useState(""); const [saving, setSaving] = useState(false);
   useEffect(() => {
     if (!selected || isNew) return;
-    setId(selected.id); setTitle(selected.title); setBrand(selected.brand || ""); setCategory(selected.category || ""); setSpecies(selected.species === "dog" ? "dog" : "cat");
+    setId(selected.id); setTitle(selected.title); setBrand(selected.brand || ""); setCategory(selected.category || ""); setSpecies(selected.species || "cat");
     setPrice(selected.price == null ? "" : String(selected.price)); setImageUrl(selected.image_url || "");
     setDescription(selected.description || ""); setIngredients(selected.ingredients_text || "");
   }, [selected, isNew]);
@@ -326,7 +355,7 @@ function AdminCatalogPage() {
         <label className="field-label">Назва<input className="form-control" required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
         <label className="field-label">Бренд<input className="form-control" value={brand} onChange={(event) => setBrand(event.target.value)} /></label>
         <label className="field-label">Категорія<input className="form-control" value={category} onChange={(event) => setCategory(event.target.value)} /></label>
-        <label className="field-label">Для кого<select className="form-control" value={species} onChange={(event) => setSpecies(event.target.value as "cat" | "dog")}><option value="cat">Коти</option><option value="dog">Собаки</option></select></label>
+        <label className="field-label">Для кого<select className="form-control" value={species} onChange={(event) => setSpecies(event.target.value)}><option value="cat">Коти</option><option value="dog">Собаки</option><option value="rabbit">Кролі</option><option value="rodent">Гризуни</option><option value="bird">Птахи</option><option value="fish">Риби</option><option value="reptile">Рептилії</option></select></label>
         <label className="field-label">Ціна, ₴<input className="form-control" type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} /></label>
         <label className="field-label">Посилання на фото<input className="form-control" type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} /></label>
         <label className="field-label">Опис<textarea className="form-control" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} /></label>
@@ -360,7 +389,22 @@ function AuthPage({ onAuth }: { onAuth: (user: User, token: string) => void }) {
     </form>
   </section></main>;
 }
-function Footer() { return <footer><div className="container footer-main"><div><Link className="logo" to="/"><span className="logo-mark"><Icon name="paw" size={22} /></span><span>PetMind<span className="text-[#e26f45]">.</span></span></Link><p>Турбота, підкріплена знаннями<br />та сучасними технологіями.</p></div><div><b>Покупцям</b><Link to="/catalog">Каталог</Link><Link to="/delivery">Доставка й оплата</Link><Link to="/account">Особистий кабінет</Link></div><div><b>PetMind</b><Link to="/about">Про нас</Link><Link to="/recommendations">Рекомендації</Link><Link to="/contacts">Контакти</Link></div><div><b>Ветаптека</b><Link to="/pharmacy">Ветпрепарати</Link><Link to="/brands">Бренди</Link></div></div><div className="container footer-bottom"><span>© 2026 PetMind</span><span>Піклуємося про кожного улюбленця</span></div></footer>; }
+type PhotoCredit = { file: string; title: string; author: string; license: string; license_url?: string | null; source: string };
+
+// Product photos are freely licensed (Wikimedia Commons, Flickr); CC BY / BY-SA require attribution.
+function CreditsPage() {
+  const [credits, setCredits] = useState<PhotoCredit[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    fetch("/products/credits.json").then((response) => response.json()).then(setCredits)
+      .catch(() => setError("Не вдалося завантажити список джерел."));
+  }, []);
+  return <main className="container section-space"><div className="section-heading"><div><span className="section-overline">PetMind</span><h1>Джерела фото товарів</h1><p>Фото товарів використано за вільними ліцензіями Creative Commons або як суспільне надбання.</p></div></div>
+    {error && <ErrorNotice message={error} />}
+    <div className="credits-grid">{credits.map((credit) => <figure className="credit-card" key={credit.file}><img src={credit.file} alt={credit.title} loading="lazy" /><figcaption><b>{credit.title}</b><span>Автор: {credit.author || "невідомий"}</span><span>Ліцензія: {credit.license_url ? <a href={credit.license_url} target="_blank" rel="noreferrer">{credit.license}</a> : credit.license}</span><a href={credit.source} target="_blank" rel="noreferrer">Джерело</a></figcaption></figure>)}</div></main>;
+}
+
+function Footer() { return <footer><div className="container footer-main"><div><Link className="logo" to="/"><span className="logo-mark"><Icon name="paw" size={22} /></span><span>PetMind<span className="text-[#e26f45]">.</span></span></Link><p>Турбота, підкріплена знаннями<br />та сучасними технологіями.</p></div><div><b>Покупцям</b><Link to="/catalog">Каталог</Link><Link to="/delivery">Доставка й оплата</Link><Link to="/account">Особистий кабінет</Link></div><div><b>PetMind</b><Link to="/about">Про нас</Link><Link to="/recommendations">Рекомендації</Link><Link to="/contacts">Контакти</Link></div><div><b>Ветаптека</b><Link to="/pharmacy">Ветпрепарати</Link><Link to="/brands">Бренди</Link></div></div><div className="container footer-bottom"><span>© 2026 PetMind</span><Link to="/credits">Джерела фото</Link><span>Піклуємося про кожного улюбленця</span></div></footer>; }
 
 function InfoPage({ title, text }: { title: string; text: string }) { return <main className="container section-space"><span className="section-overline">PetMind</span><h1>{title}</h1><section className="research-panel mt-6"><p>{text}</p></section></main>; }
 

@@ -88,3 +88,5 @@ pattern,variant
 \bжелатин\w*,gelatin
 \brice\b,rice
 \bрис\w*,rice
+\b(?:shrimps?|prawns?|crustaceans?)\b,fish
+\bкреветк\w*,fish

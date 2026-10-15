@@ -33,6 +33,11 @@ _RULES: tuple[tuple[Intent, re.Pattern[str]], ...] = (
     (Intent.GREETING, re.compile(r"^\s*(?:привіт\w*|вітаю|добр\w+\s+\w+|hello|hi)\b|що\s+ти\s+вмієш|допомож\w*", re.I)),
 )
 
+
+def _bullets(titles: list[str]) -> str:
+    return "\n".join(f"• «{title}»" for title in titles)
+
+
 HELP = ("Я можу підібрати безпечні товари за профілем тварини, знайти товар у каталозі, показати склад "
         "або нагадування про поповнення запасів. Що вас цікавить?")
 
@@ -97,7 +102,7 @@ class DeterministicIntentRouter:
             self._call(ctx, "check_safety", {"product_id": product["id"], "pet_id": ctx.pet_id})
         safe_titles = self._card_titles(ctx)
         if safe_titles:
-            return "Знайшов безпечні для вашої тварини товари: " + "; ".join(safe_titles[:4]) + "."
+            return "Знайшов безпечні для вашої тварини товари:\n" + _bullets(safe_titles[:4])
         if found:
             return "Знайдені товари не підходять за профілем тварини. Можу підібрати безпечні рекомендації."
         return self._recommendations(text, ctx, prefix="За цим запитом нічого не знайшов. ")
@@ -107,4 +112,4 @@ class DeterministicIntentRouter:
         titles = self._card_titles(ctx)
         if not titles:
             return prefix + "Зараз не знайшов перевірених рекомендацій."
-        return prefix + "Ось безпечні рекомендації для вашої тварини: " + "; ".join(titles[:4]) + "."
+        return prefix + "Ось безпечні рекомендації для вашої тварини:\n" + _bullets(titles[:4])

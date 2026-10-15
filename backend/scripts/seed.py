@@ -89,15 +89,15 @@ def _age_birth_date(years: int, today: date | None = None) -> date:
 def _demo_profiles() -> list[dict[str, Any]]:
     today = date.today()
     return [
-        {"external_id": "petly-demo-murchyk", "display_name": "Демо-користувач 1", "email": "murchyk@petmind.local",
+        {"external_id": "petly-demo-murchyk", "display_name": "Олена", "email": "murchyk@petmind.local",
          "pet": {"name": "Мурчик", "species": "cat", "birth_date": _age_birth_date(6, today),
                  "breed": None, "weight_kg": 4.5, "allergens": ["птиця"],
                  "diet_restrictions": [], "lifestyle": "стерилізований", "photo_url": None}},
-        {"external_id": "petly-demo-richie", "display_name": "Демо-користувач 2", "email": "richie@petmind.local",
+        {"external_id": "petly-demo-richie", "display_name": "Андрій", "email": "richie@petmind.local",
          "pet": {"name": "Річі", "species": "dog", "birth_date": _age_birth_date(4, today),
                  "breed": "золотистий ретривер", "weight_kg": 31.0, "allergens": [],
                  "diet_restrictions": [], "lifestyle": None, "photo_url": None}},
-        {"external_id": "petly-demo-third", "display_name": "Демо-користувач 3", "email": "luna@petmind.local",
+        {"external_id": "petly-demo-third", "display_name": "Марія", "email": "luna@petmind.local",
          "pet": {"name": "Луна", "species": "cat", "birth_date": _age_birth_date(2, today),
                  "breed": None, "weight_kg": 3.8, "allergens": [],
                  "diet_restrictions": [], "lifestyle": None, "photo_url": None}},
@@ -121,6 +121,7 @@ def _seed_demo_profiles() -> dict[str, int]:
             # Demo owners can sign in (BUG-028); the password comes from PETMIND_DEMO_PASSWORD.
             if user is not None:
                 user.email, user.password_hash = demo["email"], password_hash
+                user.display_name = demo["display_name"]
             pet_id = uuid.uuid5(NAMESPACE, f"pet:{demo['external_id']}:{demo['pet']['name']}")
             pet = session.get(Pet, pet_id)
             if pet is None:
@@ -149,52 +150,52 @@ def _seed_admin_account() -> None:
 
 
 def _seed_demo_catalog() -> int:
-    """Insert clearly identified sample goods to make the UI usable without research data."""
+    """Insert the PetMind store catalog (house brand, a few real-brand examples, vet pharmacy)."""
     rows = [
-        {"id": "PETMIND-DEMO-CAT-SALMON", "title": "Сухий корм для котів із лососем", "brand": "PetMind Demo",
-         "category": "Сухий корм", "species": "cat", "price": 649.0, "image_url": "/demo-products/cat-salmon.svg",
-         "description": "Демонстраційний товар каталогу. Дані не є комерційною пропозицією.", "ingredients_text": "salmon, rice, salmon fat",
-         "protein": 32.0, "fat": 16.0, "is_regular": True, "package_weight_kg": 2.0},
-        {"id": "PETMIND-DEMO-CAT-STERILIZED-SALMON", "title": "Сухий корм для стерилізованих котів із лососем", "brand": "PetMind Demo",
-         "category": "Сухий корм для стерилізованих котів", "species": "cat", "price": 689.0, "image_url": "/demo-products/cat-salmon.svg",
-         "description": "Демонстраційний раціон для стерилізованих дорослих котів. Дані не є комерційною пропозицією.", "ingredients_text": "salmon, rice, salmon fat",
-         "protein": 34.0, "fat": 12.0, "is_regular": True, "package_weight_kg": 2.0},
-        {"id": "PETMIND-DEMO-CAT-CHICKEN", "title": "Корм для котів із курятиною", "brand": "PetMind Demo",
-         "category": "Сухий корм", "species": "cat", "price": 529.0, "image_url": "/demo-products/cat-chicken.svg",
-         "description": "Демонстраційний товар з птицею для перевірки фільтра безпеки.", "ingredients_text": "chicken, corn, rice",
-         "protein": 30.0, "fat": 14.0, "is_regular": True, "package_weight_kg": 2.0},
-        {"id": "PETMIND-DEMO-DOG-BEEF", "title": "Повнораціонний корм для собак із яловичиною", "brand": "PetMind Demo",
-         "category": "Сухий корм", "species": "dog", "price": 799.0, "image_url": "/demo-products/dog-beef.svg",
-         "description": "Демонстраційний товар каталогу. Дані не є комерційною пропозицією.", "ingredients_text": "beef, rice, carrot",
-         "protein": 26.0, "fat": 14.0, "is_regular": True, "package_weight_kg": 3.0},
-        {"id": "PETMIND-DEMO-DOG-SALMON", "title": "Корм для собак із лососем", "brand": "PetMind Demo",
-         "category": "Вологий корм", "species": "dog", "price": 119.0, "image_url": "/demo-products/dog-salmon.svg",
-         "description": "Демонстраційний товар каталогу. Дані не є комерційною пропозицією.", "ingredients_text": "salmon, pumpkin, rice",
-         "protein": 10.0, "fat": 6.0, "is_regular": True, "package_weight_kg": 0.4},
+        {"id": "PETMIND-DEMO-CAT-SALMON", "title": "Сухий корм для домашніх котів Indoor з лососем", "brand": "PetMind",
+         "category": "Сухий корм", "species": "cat", "price": 649.0, "image_url": "/products/cat-dry.jpg",
+         "description": "Для котів, які живуть у квартирі: помірна калорійність, клітковина для виведення шерсті та лосось для блиску шерсті.",
+         "ingredients_text": "salmon, rice, salmon fat", "protein": 32.0, "fat": 16.0, "moisture": 9.0, "is_regular": True,
+         "package_weight_kg": 2.0, "energy_kcal_per_kg": 3800.0},
+        {"id": "PETMIND-DEMO-CAT-CHICKEN", "title": "Сухий корм для активних котів Active з куркою", "brand": "PetMind",
+         "category": "Сухий корм", "species": "cat", "price": 529.0, "image_url": "/products/cat-dry-grainfree.jpg",
+         "description": "Для котів, які багато рухаються та гуляють: більше енергії й білка з курки.",
+         "ingredients_text": "chicken, corn, rice", "protein": 30.0, "fat": 14.0, "moisture": 9.0, "is_regular": True,
+         "package_weight_kg": 2.0, "energy_kcal_per_kg": 3800.0},
+        {"id": "PETMIND-DEMO-DOG-BEEF", "title": "Сухий корм для активних собак Active з яловичиною", "brand": "PetMind",
+         "category": "Сухий корм", "species": "dog", "price": 799.0, "image_url": "/products/dog-dry-large.jpg",
+         "description": "Для собак з високим рівнем активності: яловичина, рис і морква для енергії та травлення.",
+         "ingredients_text": "beef, rice, carrot", "protein": 26.0, "fat": 14.0, "moisture": 10.0, "is_regular": True,
+         "package_weight_kg": 3.0, "energy_kcal_per_kg": 3800.0},
+        {"id": "PETMIND-DEMO-DOG-SALMON", "title": "Вологий корм для собак з лососем і гарбузом, 400 г", "brand": "PetMind",
+         "category": "Вологий корм", "species": "dog", "price": 119.0, "image_url": "/products/dog-wet-can.jpg",
+         "description": "Ніжний паштет з лососем і гарбузом — легкий для травлення, підходить собакам з чутливим шлунком.",
+         "ingredients_text": "salmon, pumpkin, rice", "protein": 10.0, "fat": 6.0, "moisture": 78.0, "is_regular": True,
+         "package_weight_kg": 0.4, "energy_kcal_per_kg": 900.0},
         {"id": "PETMIND-DEMO-ROYAL-CANIN-STERILISED", "title": "Royal Canin Sterilised 37 — корм для стерилізованих котів", "brand": "Royal Canin",
          "category": "Сухий корм", "species": "cat", "price": 899.0,
          "image_url": "https://www.petcorner.rs/cdn/shop/files/royal-canin-sterilised-37-suva-hrana-macke.png?v=1754066639&width=600",
-         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "description": "Сухий корм відомого бренду для щоденного годування дорослих котів. Склад на сайті наведено скорочено — повний склад і рекомендації з годування дивіться на упаковці.",
          "ingredients_text": "dehydrated poultry protein, maize, wheat gluten, rice, animal fats", "protein": 37.0, "fat": 12.0, "is_regular": True, "package_weight_kg": 2.0},
         {"id": "PETMIND-DEMO-PURINA-PROPLAN-SALMON", "title": "Purina Pro Plan Adult Salmon — сухий корм для дорослих котів", "brand": "Purina Pro Plan",
          "category": "Сухий корм", "species": "cat", "price": 799.0,
          "image_url": "https://www.purina.nl/sites/default/files/2023-06/07613036508315_3_frontplunge.png",
-         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "description": "Сухий корм відомого бренду для щоденного годування дорослих котів. Склад на сайті наведено скорочено — повний склад і рекомендації з годування дивіться на упаковці.",
          "ingredients_text": "salmon, poultry protein, rice, corn", "protein": 36.0, "fat": 16.0, "is_regular": True, "package_weight_kg": 1.5},
         {"id": "PETMIND-DEMO-HILLS-CHICKEN", "title": "Hill’s Science Diet Adult Chicken — сухий корм для котів", "brand": "Hill’s Science Diet",
          "category": "Сухий корм", "species": "cat", "price": 949.0,
          "image_url": "https://cdn11.bigcommerce.com/s-xfu1s3ki5p/images/stencil/700w/attribute_rule_images/4459_source_1772138542.png",
-         "description": "Демонстраційна позиція з реальним найменуванням бренду; ціна-приклад, продаж і наявність не підтверджені. Склад звіряйте з етикеткою конкретної упаковки.",
+         "description": "Сухий корм відомого бренду для щоденного годування дорослих котів. Склад на сайті наведено скорочено — повний склад і рекомендації з годування дивіться на упаковці.",
          "ingredients_text": "chicken, brown rice, chicken meal", "protein": 32.0, "fat": 18.0, "is_regular": True, "package_weight_kg": 1.5},
-        {"id": "PETMIND-DEMO-NEXGARD-DOG", "title": "NexGard для собак 4–10 кг (демо-картка)", "brand": "NexGard",
-         "category": "Ветаптека", "species": "dog", "price": 1565.0,
+        {"id": "PETMIND-DEMO-NEXGARD-DOG", "title": "NexGard для собак 4–10 кг, 3 жувальні таблетки", "brand": "NexGard",
+         "category": "Ветаптека · Від бліх і кліщів", "species": "dog", "price": 1565.0,
          "image_url": "https://www.boehringer-ingelheim.com/sites/default/files/Animal_Health/NexGard_EU_Pack_3ct_Medium%20for%20web.png",
-         "description": "Демонстраційна картка ветпрепарату. Ціна-приклад за онлайн-карткою Rozetka; товар і наявність у PetMind не продаються. Перед застосуванням проконсультуйтеся з ветеринаром.",
+         "description": "Жувальні таблетки від бліх і кліщів для собак, діють місяць. Діюча речовина — афоксоланер. Перед застосуванням ознайомтеся з інструкцією та проконсультуйтеся з ветеринарним лікарем.",
          "ingredients_text": "", "protein": None, "fat": None, "is_regular": False, "package_weight_kg": 0.0},
-        {"id": "PETMIND-DEMO-ADVANTAGE-CAT", "title": "Advantage 80 для котів понад 4 кг (демо-картка)", "brand": "Advantage",
-         "category": "Ветаптека", "species": "cat", "price": 221.26,
+        {"id": "PETMIND-DEMO-ADVANTAGE-CAT", "title": "Advantage 80 для котів понад 4 кг, 4 піпетки", "brand": "Advantage",
+         "category": "Ветаптека · Від бліх і кліщів", "species": "cat", "price": 221.26,
          "image_url": "https://cdn.webshopapp.com/shops/43367/files/470992585/advantage-advantage-katze.jpg",
-         "description": "Демонстраційна картка ветпрепарату. Ціна-приклад за онлайн-карткою Pethouse; товар і наявність у PetMind не продаються. Перед застосуванням проконсультуйтеся з ветеринаром.",
+         "description": "Краплі на холку від бліх для котів вагою понад 4 кг, діють до 4 тижнів. Діюча речовина — імідаклоприд. Перед застосуванням ознайомтеся з інструкцією та проконсультуйтеся з ветеринарним лікарем.",
          "ingredients_text": "", "protein": None, "fat": None, "is_regular": False, "package_weight_kg": 0.0},
     ]
     by_id = {row["id"]: row for row in rows}
@@ -230,6 +231,8 @@ def _seed_demo_enrichment() -> dict[str, int]:
         if ingredient_rows:
             session.execute(insert(ProductIngredient), ingredient_rows)
         session.commit()
+        for product in products:
+            product.embedding = None  # titles and descriptions may have changed: re-embed the store catalog
         vectors = embeddings.ensure_product_vectors(session, products)
         session.query(KBChunk).filter(KBChunk.product_id.in_(ids)).delete(synchronize_session=False)
         documents = []
