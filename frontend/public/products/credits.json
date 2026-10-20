@@ -1,354 +1,594 @@
 [
- {
-  "file": "/products/cat-dry.jpg",
-  "title": "Dry cat food 01.jpg",
-  "author": "Anne Jea.",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_01.jpg"
- },
- {
-  "file": "/products/cat-dry-sterilized.jpg",
-  "title": "Catdryfood.jpg",
-  "author": "irrational cat\n\nOriginal uploader was Dodo bird at en.wikipedia",
-  "license": "CC BY-SA 2.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Catdryfood.jpg"
- },
- {
-  "file": "/products/cat-dry-grainfree.jpg",
-  "title": "Dry cat food 06.jpg",
-  "author": "Anne Jea.",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_06.jpg"
- },
- {
-  "file": "/products/cat-vet-diet.jpg",
-  "title": "Dry cat food 04.jpg",
-  "author": "Anne Jea.",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_04.jpg"
- },
- {
-  "file": "/products/kitten-dry.jpg",
-  "title": "Kitten-Hungry.jpg",
-  "author": "Misophat",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Kitten-Hungry.jpg"
- },
- {
-  "file": "/products/kitten-wet.jpg",
-  "title": "Kitten eating (3338962011).jpg",
-  "author": "Kevin Dooley from Chandler, AZ, USA",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Kitten_eating_(3338962011).jpg"
- },
- {
-  "file": "/products/cat-wet.jpg",
-  "title": "Wet cat food 01.jpg",
-  "author": "Anne Jea.",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Wet_cat_food_01.jpg"
- },
- {
-  "file": "/products/cat-senior.jpg",
-  "title": "Grey cat eating.jpg",
-  "author": "Öljylautta",
-  "license": "Public domain",
-  "license_url": null,
-  "source": "https://commons.wikimedia.org/wiki/File:Grey_cat_eating.jpg"
- },
- {
-  "file": "/products/cat-treats.jpg",
-  "title": "WARNA WARNI MAKANAN KUCING.jpg",
-  "author": "PHASOLIFE",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:WARNA_WARNI_MAKANAN_KUCING.jpg"
- },
- {
-  "file": "/products/dog-dry.jpg",
-  "title": "Dog food in a bowl.jpg",
-  "author": "James Redekop",
-  "license": "CC BY-SA 2.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_food_in_a_bowl.jpg"
- },
- {
-  "file": "/products/dog-dry-large.jpg",
-  "title": "Pile of Kibble Dog Food (51049786351).jpg",
-  "author": "Megan Marrs",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Pile_of_Kibble_Dog_Food_(51049786351).jpg"
- },
- {
-  "file": "/products/dog-vet-diet.jpg",
-  "title": "Dog Food (1).jpg",
-  "author": "Alisha Vargas",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_(1).jpg"
- },
- {
-  "file": "/products/dog-dry-light.jpg",
-  "title": "Dog Food (208810939).jpg",
-  "author": "chrismetcalfTV",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_(208810939).jpg"
- },
- {
-  "file": "/products/dog-dry-mix.jpg",
-  "title": "Dog Food 2 (6409002109).jpg",
-  "author": "Sh4rp_i",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_2_(6409002109).jpg"
- },
- {
-  "file": "/products/puppy-dry.jpg",
-  "title": "Dogs are eating food.jpg",
-  "author": "Hegde Neha",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dogs_are_eating_food.jpg"
- },
- {
-  "file": "/products/dog-wet-bowl.jpg",
-  "title": "Eating malamute puppy.JPG",
-  "author": "No machine-readable author provided. Daniel Piil~commonswiki assumed (based on copyright claims).",
-  "license": "CC BY-SA 3.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Eating_malamute_puppy.JPG"
- },
- {
-  "file": "/products/dog-wet-can.jpg",
-  "title": "Canned Cat Food1.jpg",
-  "author": "No machine-readable author provided. NekoJaNekoJa~commonswiki assumed (based on copyright claims).",
-  "license": "CC BY-SA 3.0",
-  "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
-  "source": "https://commons.wikimedia.org/wiki/File:Canned_Cat_Food1.jpg"
- },
- {
-  "file": "/products/dog-biscuits.jpg",
-  "title": "Bone Dog Treats (51049786016).jpg",
-  "author": "Megan Marrs",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Bone_Dog_Treats_(51049786016).jpg"
- },
- {
-  "file": "/products/dog-biscuits-2.jpg",
-  "title": "Dog Treats (51049057473).jpg",
-  "author": "Megan Marrs",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_Treats_(51049057473).jpg"
- },
- {
-  "file": "/products/dog-chew.jpg",
-  "title": "Dreyfuss chews his rawhide bone.jpg",
-  "author": "Shane Adams",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Dreyfuss_chews_his_rawhide_bone.jpg"
- },
- {
-  "file": "/products/vet-drops.jpg",
-  "title": "Eye Drops - eye lubricant.jpg",
-  "author": "Dineshkumar Nallaveerappan",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Eye_Drops_-_eye_lubricant.jpg"
- },
- {
-  "file": "/products/vet-collar.jpg",
-  "title": "She is so done with the flea collar.",
-  "author": "Uriel 1998",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0/",
-  "source": "https://www.flickr.com/photos/21369563@N00/27082905079"
- },
- {
-  "file": "/products/vet-tablets.jpg",
-  "title": "Pills in blister pack.jpg",
-  "author": "Unknown",
-  "license": "CC0",
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Pills_in_blister_pack.jpg"
- },
- {
-  "file": "/products/vet-vitamins.jpg",
-  "title": "Pills and medicines 02.jpg",
-  "author": "BuhaM",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Pills_and_medicines_02.jpg"
- },
- {
-  "file": "/products/salmon-oil.jpg",
-  "title": "Lachsölkapseln.JPG",
-  "author": "User:A,Ocram",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Lachs%C3%B6lkapseln.JPG"
- },
- {
-  "file": "/products/fish-oil.jpg",
-  "title": "Fish Oil Capsules.jpg",
-  "author": "Oddman47",
-  "license": "CC0",
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Fish_Oil_Capsules.jpg"
- },
- {
-  "file": "/products/shampoo-flea.jpg",
-  "title": "Washing a dog in a bath tub.jpg",
-  "author": "Andrew Vargas",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Washing_a_dog_in_a_bath_tub.jpg"
- },
- {
-  "file": "/products/shampoo-gentle.jpg",
-  "title": "Cute bath dog.jpg",
-  "author": "Kjeldgaardcameron",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Cute_bath_dog.jpg"
- },
- {
-  "file": "/products/rabbit-pellets.jpg",
-  "title": "Pellets for Rabbits.jpg",
-  "author": "Andreas Rühle de:User:Anderas",
-  "license": "CC BY-SA 3.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Pellets_for_Rabbits.jpg"
- },
- {
-  "file": "/products/rabbit-hay.jpg",
-  "title": "Kaniner, Belgisk hare IMG 6166.JPG",
-  "author": "Semin",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Kaniner,_Belgisk_hare_IMG_6166.JPG"
- },
- {
-  "file": "/products/guinea-pellets.jpg",
-  "title": "Guinea pig eating.jpg",
-  "author": "FTKelle",
-  "license": "CC0",
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Guinea_pig_eating.jpg"
- },
- {
-  "file": "/products/guinea-treats.jpg",
-  "title": "Guinea pigs eating lettuce.jpg",
-  "author": "Mittens666",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Guinea_pigs_eating_lettuce.jpg"
- },
- {
-  "file": "/products/hamster-mix.jpg",
-  "title": "Cricetinae sp.-Pet hamster eating.jpg",
-  "author": "Zagemieke",
-  "license": "CC BY-SA 3.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Cricetinae_sp.-Pet_hamster_eating.jpg"
- },
- {
-  "file": "/products/bird-seed.jpg",
-  "title": "Cockatiel seed mix indivudually prepared.jpg",
-  "author": "Soldier of Wasteland",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Cockatiel_seed_mix_indivudually_prepared.jpg"
- },
- {
-  "file": "/products/bird-vitamins.jpg",
-  "title": "Budgerigars Budgies (8454309703).jpg",
-  "author": "shankar s. from Dubai, united arab emirates",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Budgerigars_Budgies_(8454309703).jpg"
- },
- {
-  "file": "/products/fish-flakes.jpg",
-  "title": "Aquarium - dried food.jpg",
-  "author": "User:Pinpin",
-  "license": "CC BY-SA 3.0",
-  "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
-  "source": "https://commons.wikimedia.org/wiki/File:Aquarium_-_dried_food.jpg"
- },
- {
-  "file": "/products/vet-pipettes.jpg",
-  "title": "Transfer pipette.jpg",
-  "author": "Pualuu",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Transfer_pipette.jpg"
- },
- {
-  "file": "/products/vet-spray.jpg",
-  "title": "Spruehflasche 02 (fcm).jpg",
-  "author": "Photograph:  Frank C. Müller, Frankfurt am Main",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Spruehflasche_02_(fcm).jpg"
- },
- {
-  "file": "/products/vet-dog-ear.jpg",
-  "title": "Ear examination of a white dog in Newark, New Jersey.jpg",
-  "author": "Veterinarian Pet Alliance",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Ear_examination_of_a_white_dog_in_Newark,_New_Jersey.jpg"
- },
- {
-  "file": "/products/vet-cat-ear.jpg",
-  "title": "Otoscope examination of a cat ear in Newark, New Jersey.jpg",
-  "author": "Veterinarian Pet Alliance",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Otoscope_examination_of_a_cat_ear_in_Newark,_New_Jersey.jpg"
- },
- {
-  "file": "/products/vet-cat-checkup.jpg",
-  "title": "Stethoscope examination of an orange cat in Newark, New Jersey.jpg",
-  "author": "Veterinarian Pet Alliance",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Stethoscope_examination_of_an_orange_cat_in_Newark,_New_Jersey.jpg"
- },
- {
-  "file": "/products/vet-omega-bottle.jpg",
-  "title": "Omega 3 capsules in white bottle (52715127894).jpg",
-  "author": "Jernej Furman from Slovenia",
-  "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Omega_3_capsules_in_white_bottle_(52715127894).jpg"
- },
- {
-  "file": "/products/vet-capsules.jpg",
-  "title": "Algae omega-3 270mg capsules - vegan.jpg",
-  "author": "P3829",
-  "license": "CC0",
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Algae_omega-3_270mg_capsules_-_vegan.jpg"
- },
- {
-  "file": "/products/cat-grooming.jpg",
-  "title": "Brushing a female cat's hair - panoramio.jpg",
-  "author": "Jiaqian AirplaneFan",
-  "license": "CC BY 3.0",
-  "license_url": "https://creativecommons.org/licenses/by/3.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Brushing_a_female_cat%27s_hair_-_panoramio.jpg"
- }
+  {
+    "file": "/products/cat-dry.jpg",
+    "title": "Dry cat food 01.jpg",
+    "author": "Anne Jea.",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_01.jpg"
+  },
+  {
+    "file": "/products/cat-dry-sterilized.jpg",
+    "title": "Catdryfood.jpg",
+    "author": "irrational cat\n\nOriginal uploader was Dodo bird at en.wikipedia",
+    "license": "CC BY-SA 2.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Catdryfood.jpg"
+  },
+  {
+    "file": "/products/cat-dry-grainfree.jpg",
+    "title": "Dry cat food 06.jpg",
+    "author": "Anne Jea.",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_06.jpg"
+  },
+  {
+    "file": "/products/cat-vet-diet.jpg",
+    "title": "Dry cat food 04.jpg",
+    "author": "Anne Jea.",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dry_cat_food_04.jpg"
+  },
+  {
+    "file": "/products/kitten-dry.jpg",
+    "title": "Kitten-Hungry.jpg",
+    "author": "Misophat",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Kitten-Hungry.jpg"
+  },
+  {
+    "file": "/products/kitten-wet.jpg",
+    "title": "Kitten eating (3338962011).jpg",
+    "author": "Kevin Dooley from Chandler, AZ, USA",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Kitten_eating_(3338962011).jpg"
+  },
+  {
+    "file": "/products/cat-wet.jpg",
+    "title": "Wet cat food 01.jpg",
+    "author": "Anne Jea.",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Wet_cat_food_01.jpg"
+  },
+  {
+    "file": "/products/cat-senior.jpg",
+    "title": "Grey cat eating.jpg",
+    "author": "Öljylautta",
+    "license": "Public domain",
+    "license_url": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Grey_cat_eating.jpg"
+  },
+  {
+    "file": "/products/cat-treats.jpg",
+    "title": "WARNA WARNI MAKANAN KUCING.jpg",
+    "author": "PHASOLIFE",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:WARNA_WARNI_MAKANAN_KUCING.jpg"
+  },
+  {
+    "file": "/products/dog-dry.jpg",
+    "title": "Dog food in a bowl.jpg",
+    "author": "James Redekop",
+    "license": "CC BY-SA 2.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dog_food_in_a_bowl.jpg"
+  },
+  {
+    "file": "/products/dog-dry-large.jpg",
+    "title": "Pile of Kibble Dog Food (51049786351).jpg",
+    "author": "Megan Marrs",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pile_of_Kibble_Dog_Food_(51049786351).jpg"
+  },
+  {
+    "file": "/products/dog-vet-diet.jpg",
+    "title": "Dog Food (1).jpg",
+    "author": "Alisha Vargas",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_(1).jpg"
+  },
+  {
+    "file": "/products/dog-dry-light.jpg",
+    "title": "Dog Food (208810939).jpg",
+    "author": "chrismetcalfTV",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_(208810939).jpg"
+  },
+  {
+    "file": "/products/dog-dry-mix.jpg",
+    "title": "Dog Food 2 (6409002109).jpg",
+    "author": "Sh4rp_i",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dog_Food_2_(6409002109).jpg"
+  },
+  {
+    "file": "/products/puppy-dry.jpg",
+    "title": "Dogs are eating food.jpg",
+    "author": "Hegde Neha",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dogs_are_eating_food.jpg"
+  },
+  {
+    "file": "/products/dog-wet-bowl.jpg",
+    "title": "Eating malamute puppy.JPG",
+    "author": "No machine-readable author provided. Daniel Piil~commonswiki assumed (based on copyright claims).",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Eating_malamute_puppy.JPG"
+  },
+  {
+    "file": "/products/dog-wet-can.jpg",
+    "title": "Canned Cat Food1.jpg",
+    "author": "No machine-readable author provided. NekoJaNekoJa~commonswiki assumed (based on copyright claims).",
+    "license": "CC BY-SA 3.0",
+    "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Canned_Cat_Food1.jpg"
+  },
+  {
+    "file": "/products/dog-biscuits.jpg",
+    "title": "Bone Dog Treats (51049786016).jpg",
+    "author": "Megan Marrs",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Bone_Dog_Treats_(51049786016).jpg"
+  },
+  {
+    "file": "/products/dog-biscuits-2.jpg",
+    "title": "Dog Treats (51049057473).jpg",
+    "author": "Megan Marrs",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dog_Treats_(51049057473).jpg"
+  },
+  {
+    "file": "/products/dog-chew.jpg",
+    "title": "Dreyfuss chews his rawhide bone.jpg",
+    "author": "Shane Adams",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Dreyfuss_chews_his_rawhide_bone.jpg"
+  },
+  {
+    "file": "/products/vet-drops.jpg",
+    "title": "Eye Drops - eye lubricant.jpg",
+    "author": "Dineshkumar Nallaveerappan",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Eye_Drops_-_eye_lubricant.jpg"
+  },
+  {
+    "file": "/products/vet-collar.jpg",
+    "title": "She is so done with the flea collar.",
+    "author": "Uriel 1998",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "source": "https://www.flickr.com/photos/21369563@N00/27082905079"
+  },
+  {
+    "file": "/products/vet-tablets.jpg",
+    "title": "Pills in blister pack.jpg",
+    "author": "Unknown",
+    "license": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Pills_in_blister_pack.jpg"
+  },
+  {
+    "file": "/products/vet-vitamins.jpg",
+    "title": "Pills and medicines 02.jpg",
+    "author": "BuhaM",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pills_and_medicines_02.jpg"
+  },
+  {
+    "file": "/products/salmon-oil.jpg",
+    "title": "Lachsölkapseln.JPG",
+    "author": "User:A,Ocram",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lachs%C3%B6lkapseln.JPG"
+  },
+  {
+    "file": "/products/fish-oil.jpg",
+    "title": "Fish Oil Capsules.jpg",
+    "author": "Oddman47",
+    "license": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Fish_Oil_Capsules.jpg"
+  },
+  {
+    "file": "/products/shampoo-flea.jpg",
+    "title": "Washing a dog in a bath tub.jpg",
+    "author": "Andrew Vargas",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Washing_a_dog_in_a_bath_tub.jpg"
+  },
+  {
+    "file": "/products/shampoo-gentle.jpg",
+    "title": "Cute bath dog.jpg",
+    "author": "Kjeldgaardcameron",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cute_bath_dog.jpg"
+  },
+  {
+    "file": "/products/rabbit-pellets.jpg",
+    "title": "Pellets for Rabbits.jpg",
+    "author": "Andreas Rühle de:User:Anderas",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pellets_for_Rabbits.jpg"
+  },
+  {
+    "file": "/products/rabbit-hay.jpg",
+    "title": "Kaniner, Belgisk hare IMG 6166.JPG",
+    "author": "Semin",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Kaniner,_Belgisk_hare_IMG_6166.JPG"
+  },
+  {
+    "file": "/products/guinea-pellets.jpg",
+    "title": "Guinea pig eating.jpg",
+    "author": "FTKelle",
+    "license": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Guinea_pig_eating.jpg"
+  },
+  {
+    "file": "/products/guinea-treats.jpg",
+    "title": "Guinea pigs eating lettuce.jpg",
+    "author": "Mittens666",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Guinea_pigs_eating_lettuce.jpg"
+  },
+  {
+    "file": "/products/hamster-mix.jpg",
+    "title": "Cricetinae sp.-Pet hamster eating.jpg",
+    "author": "Zagemieke",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cricetinae_sp.-Pet_hamster_eating.jpg"
+  },
+  {
+    "file": "/products/bird-seed.jpg",
+    "title": "Cockatiel seed mix indivudually prepared.jpg",
+    "author": "Soldier of Wasteland",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cockatiel_seed_mix_indivudually_prepared.jpg"
+  },
+  {
+    "file": "/products/bird-vitamins.jpg",
+    "title": "Budgerigars Budgies (8454309703).jpg",
+    "author": "shankar s. from Dubai, united arab emirates",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Budgerigars_Budgies_(8454309703).jpg"
+  },
+  {
+    "file": "/products/fish-flakes.jpg",
+    "title": "Aquarium - dried food.jpg",
+    "author": "User:Pinpin",
+    "license": "CC BY-SA 3.0",
+    "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Aquarium_-_dried_food.jpg"
+  },
+  {
+    "file": "/products/vet-pipettes.jpg",
+    "title": "Transfer pipette.jpg",
+    "author": "Pualuu",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Transfer_pipette.jpg"
+  },
+  {
+    "file": "/products/vet-spray.jpg",
+    "title": "Spruehflasche 02 (fcm).jpg",
+    "author": "Photograph:  Frank C. Müller, Frankfurt am Main",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Spruehflasche_02_(fcm).jpg"
+  },
+  {
+    "file": "/products/vet-dog-ear.jpg",
+    "title": "Ear examination of a white dog in Newark, New Jersey.jpg",
+    "author": "Veterinarian Pet Alliance",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ear_examination_of_a_white_dog_in_Newark,_New_Jersey.jpg"
+  },
+  {
+    "file": "/products/vet-cat-ear.jpg",
+    "title": "Otoscope examination of a cat ear in Newark, New Jersey.jpg",
+    "author": "Veterinarian Pet Alliance",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Otoscope_examination_of_a_cat_ear_in_Newark,_New_Jersey.jpg"
+  },
+  {
+    "file": "/products/vet-cat-checkup.jpg",
+    "title": "Stethoscope examination of an orange cat in Newark, New Jersey.jpg",
+    "author": "Veterinarian Pet Alliance",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Stethoscope_examination_of_an_orange_cat_in_Newark,_New_Jersey.jpg"
+  },
+  {
+    "file": "/products/vet-omega-bottle.jpg",
+    "title": "Omega 3 capsules in white bottle (52715127894).jpg",
+    "author": "Jernej Furman from Slovenia",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Omega_3_capsules_in_white_bottle_(52715127894).jpg"
+  },
+  {
+    "file": "/products/vet-capsules.jpg",
+    "title": "Algae omega-3 270mg capsules - vegan.jpg",
+    "author": "P3829",
+    "license": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Algae_omega-3_270mg_capsules_-_vegan.jpg"
+  },
+  {
+    "file": "/products/cat-grooming.jpg",
+    "title": "Brushing a female cat's hair - panoramio.jpg",
+    "author": "Jiaqian AirplaneFan",
+    "license": "CC BY 3.0",
+    "license_url": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Brushing_a_female_cat%27s_hair_-_panoramio.jpg"
+  },
+  {
+    "file": "/products/brand-purina-one-cat.jpg",
+    "title": "Purina One — Aliment complet pour chats adultes",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613034940377"
+  },
+  {
+    "file": "/products/brand-purina-one-dualnature.jpg",
+    "title": "Purina One — Croquettes pour chats Dual nature avec cranberry et saumon spécial chats stérilisés",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613287162151"
+  },
+  {
+    "file": "/products/brand-purina-one-sterilised.jpg",
+    "title": "Purina One — Croquettes Pour Chat Adulte Stérilisé Boeuf Bifensis",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613031571390"
+  },
+  {
+    "file": "/products/brand-brit-care-cat-sterilised.jpg",
+    "title": "Brit Care — Croquettes pour chat sterilisé",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602540761"
+  },
+  {
+    "file": "/products/brand-whiskas-sterile.jpg",
+    "title": "Whiskas — Whiskas sec stérilisé au saumon 1 an et +",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/5998749129111"
+  },
+  {
+    "file": "/products/brand-club4paws-urinary.jpg",
+    "title": "Club 4 Paws — club 4 paws urinary health",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/4820215369411"
+  },
+  {
+    "file": "/products/brand-royal-canin-kitten.jpg",
+    "title": "Royal Canin — kitten 12mois",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550702423"
+  },
+  {
+    "file": "/products/brand-felix-soup.jpg",
+    "title": "Felix — Felix Soup",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613036632102"
+  },
+  {
+    "file": "/products/brand-gourmet-gold.jpg",
+    "title": "Gourmet — Gourmet Gold Mousse Kattenvoer nat met Kip, Zalm, Niertjes en Konijn",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3222270550673"
+  },
+  {
+    "file": "/products/brand-sheba-fresh-fine.jpg",
+    "title": "Sheba — Fresh&fine sauce",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/4770608257651"
+  },
+  {
+    "file": "/products/brand-whiskas-pate.jpg",
+    "title": "Whiskas — Whiskas pâté chat",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3065890153707"
+  },
+  {
+    "file": "/products/brand-gourmet-perle.jpg",
+    "title": "Gourmet — Gourmet Perle Mini Filets In Saus, Volledig Nat Diervoeder Voor Volwassen Katten, Met Kip, Met Rund, Met Konijn, Met Zalm, 85g  Maaltijdzakje",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/5000161032433"
+  },
+  {
+    "file": "/products/brand-royal-canin-sterilised-pouch.jpg",
+    "title": "Royal Canin — Royal canin sterilised",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/9003579003923"
+  },
+  {
+    "file": "/products/brand-royal-canin-sterilised-loaf.jpg",
+    "title": "Royal Canin — Royal Canin Sterilised",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/9003579003916"
+  },
+  {
+    "file": "/products/brand-royal-canin-babycat.jpg",
+    "title": "Royal Canin — Mother & Babycat",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/9003579311660"
+  },
+  {
+    "file": "/products/brand-royal-canin-urinary.jpg",
+    "title": "Royal Canin — RC cat food urinary care",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/9003579000366"
+  },
+  {
+    "file": "/products/brand-royal-canin-gastro-cat.jpg",
+    "title": "Royal Canin — Gastro intestinal moderate calorie Féline ",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550771290"
+  },
+  {
+    "file": "/products/brand-royal-canin-satiety.jpg",
+    "title": "Royal Canin — Royal Canin - Croquettes Veterinary Diet Satiety",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550768481"
+  },
+  {
+    "file": "/products/brand-brit-superfruits-salmon.jpg",
+    "title": "Brit Care — Brit Care Superfruits Salmon",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602521449"
+  },
+  {
+    "file": "/products/brand-temptations.jpg",
+    "title": "Temptations — temptations",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/0058496435400"
+  },
+  {
+    "file": "/products/brand-purina-one-dog-mini.jpg",
+    "title": "Purina One — One mini adult",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613034146656"
+  },
+  {
+    "file": "/products/brand-purina-one-dog-medium.jpg",
+    "title": "Purina One — Purina One MEDIUM&gt;10kg Sensitive",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/7613036514279"
+  },
+  {
+    "file": "/products/brand-brit-lamb-buckwheat.jpg",
+    "title": "Brit Premium — Lamb with buckwheat",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602561841"
+  },
+  {
+    "file": "/products/brand-brit-lamb-rice.jpg",
+    "title": "Brit Premium — sensitive",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602526642"
+  },
+  {
+    "file": "/products/brand-royal-canin-puppy-xsmall.jpg",
+    "title": "Royal Canin — Puppy X-Small",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550793612"
+  },
+  {
+    "file": "/products/brand-royal-canin-puppy-chihuahua.jpg",
+    "title": "Royal Canin — Royal Canin - Puppy Chihuahua",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550722544"
+  },
+  {
+    "file": "/products/brand-royal-canin-mini-adult-8.jpg",
+    "title": "Royal Canin — adult mini 8+",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/3182550831383"
+  },
+  {
+    "file": "/products/brand-brit-weight-loss.jpg",
+    "title": "Brit Care — Brit Weigh loss rabbit",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602559176"
+  },
+  {
+    "file": "/products/brand-royal-canin-gastro-dog.jpg",
+    "title": "Royal Canin — Gastrointestinal",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/9003579309445"
+  },
+  {
+    "file": "/products/brand-brit-dental-stick.jpg",
+    "title": "Brit Care — Dental stick mobility",
+    "author": "Учасники Open Pet Food Facts",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.uk",
+    "source": "https://world.openpetfoodfacts.org/product/8595602564361"
+  }
 ]

@@ -8,13 +8,17 @@ other species and the pharmacy) so the seed is idempotent. Photos live in
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 BRAND = "PetMind"
 VET_NOTE = ("Перед застосуванням ознайомтеся з інструкцією та проконсультуйтеся з ветеринарним лікарем. "
             "Не перевищуйте рекомендовану кратність обробок.")
 DRY_KCAL, WET_KCAL = 3800.0, 900.0
+# Pack photos of real brands (Open Pet Food Facts, CC BY-SA): photo name -> brand shown on the card.
+BRAND_PHOTOS: dict[str, str] = json.loads((Path(__file__).with_name("brand_photos.json")).read_text(encoding="utf-8"))
 
 
 @dataclass(frozen=True)
@@ -69,20 +73,20 @@ class Line:
 
 
 CAT_LINES = (
-    Line("adult", "Сухий корм для дорослих котів {p}", "Сухий корм", False, 32, 15, 9, 2.0, 589, ("cat-dry", "cat-dry-grainfree", "cat-vet-diet"),
+    Line("adult", "Сухий корм для дорослих котів {p}", "Сухий корм", False, 32, 15, 9, 2.0, 589, ("brand-purina-one-cat", "brand-purina-one-dualnature"),
          "Повнораціонний корм для дорослих котів від 1 року з таурином для серця та зору."),
     Line("sterilized", "Сухий корм для стерилізованих котів {p}", "Сухий корм для стерилізованих котів", False, 35, 11, 9,
-         2.0, 629, ("cat-dry-sterilized", "cat-dry"),
+         2.0, 629, ("brand-purina-one-sterilised", "brand-brit-care-cat-sterilised", "brand-whiskas-sterile", "brand-club4paws-urinary"),
          "Знижений вміст жиру допомагає підтримувати оптимальну вагу після стерилізації, мінерали — здоров'я сечовивідних шляхів."),
-    Line("kitten", "Сухий корм для кошенят {p}", "Сухий корм для кошенят", False, 36, 18, 9, 1.5, 549, ("kitten-dry", "kitten-wet"),
+    Line("kitten", "Сухий корм для кошенят {p}", "Сухий корм для кошенят", False, 36, 18, 9, 1.5, 549, ("brand-royal-canin-kitten",),
          "Для кошенят від 2 до 12 місяців: більше білка й енергії для росту, дрібні гранули для маленьких зубів."),
-    Line("wet", "Вологий корм для котів {p}, пауч 85 г", "Вологий корм", True, 10, 5, 80, 0.085, 39, ("cat-wet", "cat-senior"),
+    Line("wet", "Вологий корм для котів {p}, пауч 85 г", "Вологий корм", True, 10, 5, 80, 0.085, 39, ("brand-felix-soup", "brand-gourmet-gold", "brand-sheba-fresh-fine", "brand-whiskas-pate", "brand-gourmet-perle", "brand-royal-canin-sterilised-pouch"),
          "Шматочки в соусі для щоденного годування або як доповнення до сухого корму; підтримує водний баланс."),
 )
 DOG_LINES = (
-    Line("adult", "Сухий корм для дорослих собак {p}", "Сухий корм", False, 26, 14, 10, 3.0, 749, ("dog-dry", "dog-dry-large", "dog-dry-mix"),
+    Line("adult", "Сухий корм для дорослих собак {p}", "Сухий корм", False, 26, 14, 10, 3.0, 749, ("brand-purina-one-dog-mini", "brand-brit-lamb-buckwheat", "brand-purina-one-dog-medium", "brand-brit-lamb-rice"),
          "Повнораціонний корм для дорослих собак середніх порід з глюкозаміном для суглобів."),
-    Line("puppy", "Сухий корм для цуценят {p}", "Сухий корм для цуценят", False, 30, 17, 10, 3.0, 789, ("puppy-dry", "dog-dry-light"),
+    Line("puppy", "Сухий корм для цуценят {p}", "Сухий корм для цуценят", False, 30, 17, 10, 3.0, 789, ("brand-royal-canin-puppy-xsmall", "brand-royal-canin-puppy-chihuahua"),
          "Для цуценят до 12 місяців: кальцій і фосфор у правильному співвідношенні для росту кісток."),
     Line("wet", "Вологий корм для собак {p}, консерва 400 г", "Вологий корм", True, 9, 6, 78, 0.4, 109, ("dog-wet-can", "dog-wet-bowl"),
          "Ніжний паштет для щоденного годування або як смачна добавка до сухого корму."),
@@ -91,10 +95,11 @@ DOG_LINES = (
 
 def _food(species: str, protein: Protein, line: Line, index: int) -> dict[str, Any]:
     product_id = f"PETMIND-DEMO-{species.upper()}-{line.key.upper()}-{protein.key.upper()}"
+    image = line.images[index % len(line.images)]
     return {
-        "id": product_id, "title": line.title.format(p=protein.ua_with), "brand": BRAND, "category": line.category,
-        "species": species, "price": round(line.base_price + 20 * (index % 4), 2),
-        "image_url": f"/products/{line.images[index % len(line.images)]}.jpg",
+        "id": product_id, "title": line.title.format(p=protein.ua_with), "brand": BRAND_PHOTOS.get(image, BRAND),
+        "category": line.category, "species": species, "price": round(line.base_price + 20 * (index % 4), 2),
+        "image_url": f"/products/{image}.jpg",
         "description": f"{line.about} {protein.note}",
         "ingredients_text": protein.wet if line.wet else protein.dry,
         "protein": float(line.protein), "fat": float(line.fat), "moisture": float(line.moisture),
@@ -107,7 +112,7 @@ def _item(product_id: str, title: str, category: str, species: str, price: float
           ingredients: str = "", *, protein: float | None = None, fat: float | None = None,
           moisture: float | None = None, weight: float | None = None, kcal: float | None = None,
           regular: bool = True) -> dict[str, Any]:
-    return {"id": f"PETMIND-DEMO-{product_id}", "title": title, "brand": BRAND, "category": category,
+    return {"id": f"PETMIND-DEMO-{product_id}", "title": title, "brand": BRAND_PHOTOS.get(image, BRAND), "category": category,
             "species": species, "price": price, "image_url": f"/products/{image}.jpg", "description": description,
             "ingredients_text": ingredients, "protein": protein, "fat": fat, "moisture": moisture, "is_regular": regular,
             "package_weight_kg": weight, "energy_kcal_per_kg": kcal}
@@ -117,10 +122,10 @@ def _special_food() -> list[dict[str, Any]]:
     return [
         # Cats
         _item("CAT-SENIOR-SALMON", "Вологий корм для котів 7+ з лососем, пауч 85 г", "Вологий корм", "cat", 45,
-              "cat-senior", "Для літніх котів: м'яка текстура, помірна калорійність і антиоксиданти для активного віку.",
+              "brand-royal-canin-sterilised-loaf", "Для літніх котів: м'яка текстура, помірна калорійність і антиоксиданти для активного віку.",
               "salmon (40%), fish broth, rice, minerals, taurine", protein=10, fat=4, moisture=81, weight=0.085, kcal=WET_KCAL),
         _item("CAT-KITTEN-WET-TURKEY", "Вологий корм для кошенят з індичкою, пауч 85 г", "Вологий корм для кошенят", "cat", 42,
-              "kitten-wet", "Ніжний мус для кошенят від 2 місяців — легко їсти навіть найменшим.",
+              "brand-royal-canin-babycat", "Ніжний мус для кошенят від 2 місяців — легко їсти навіть найменшим.",
               "turkey (45%), poultry broth, rice, minerals, taurine", protein=11, fat=6, moisture=80, weight=0.085, kcal=WET_KCAL),
         _item("CAT-GRAINFREE-TUNA", "Беззерновий сухий корм для котів з тунцем", "Сухий корм", "cat", 699, "cat-dry-grainfree",
               "Без злаків: джерело вуглеводів — горох і картопля. Підходить котам, чутливим до зернових.",
@@ -128,19 +133,19 @@ def _special_food() -> list[dict[str, Any]]:
         _item("CAT-SENSITIVE-LAMB", "Гіпоалергенний сухий корм для котів з ягнятиною", "Сухий корм", "cat", 719, "cat-dry",
               "Одне джерело тваринного білка та рис — для котів з харчовою чутливістю.",
               "lamb (30%), rice, sunflower oil, minerals, taurine", protein=31, fat=13, moisture=9, weight=2.0, kcal=DRY_KCAL),
-        _item("CAT-VET-URINARY", "Лікувальний корм для котів Urinary з лососем", "Лікувальний корм", "cat", 789, "cat-vet-diet",
+        _item("CAT-VET-URINARY", "Лікувальний корм для котів Urinary з лососем", "Лікувальний корм", "cat", 789, "brand-royal-canin-urinary",
               "Ветеринарна дієта для підтримки здоров'я сечовивідних шляхів. Застосовуйте за рекомендацією ветеринара.",
               "salmon (25%), rice, peas, fish oil, minerals", protein=33, fat=12, moisture=8, weight=1.5, kcal=DRY_KCAL),
-        _item("CAT-VET-RENAL", "Лікувальний корм для котів Renal з білою рибою", "Лікувальний корм", "cat", 819, "cat-vet-diet",
-              "Ветеринарна дієта зі зниженим вмістом фосфору для підтримки функції нирок. Лише за призначенням ветеринара.",
-              "whitefish (20%), rice, potato, fish oil, minerals", protein=26, fat=16, moisture=8, weight=1.5, kcal=DRY_KCAL),
-        _item("CAT-VET-GASTRO", "Лікувальний корм для котів Gastro з індичкою", "Лікувальний корм", "cat", 799, "cat-vet-diet",
+        _item("CAT-VET-RENAL", "Лікувальний корм для котів Satiety для контролю ваги", "Лікувальний корм", "cat", 819, "brand-royal-canin-satiety",
+              "Ветеринарна дієта з високим вмістом клітковини для зниження ваги та відчуття ситості. Застосовуйте за рекомендацією ветеринара.",
+              "whitefish (20%), rice, cellulose, fish oil, minerals", protein=34, fat=9, moisture=8, weight=1.5, kcal=DRY_KCAL),
+        _item("CAT-VET-GASTRO", "Лікувальний корм для котів Gastro з індичкою", "Лікувальний корм", "cat", 799, "brand-royal-canin-gastro-cat",
               "Легкозасвоювана дієта для котів із чутливим травленням. Застосовуйте за рекомендацією ветеринара.",
               "turkey (25%), rice, beet pulp, fish oil, minerals", protein=32, fat=14, moisture=8, weight=1.5, kcal=DRY_KCAL),
-        _item("CAT-TREATS-SALMON", "Ласощі для котів — хрусткі подушечки з лососем, 60 г", "Ласощі", "cat", 69, "cat-treats",
+        _item("CAT-TREATS-SALMON", "Ласощі для котів — хрусткі подушечки з лососем, 60 г", "Ласощі", "cat", 69, "brand-brit-superfruits-salmon",
               "Хрусткі подушечки з ніжною начинкою для заохочення та гри. До 10 штук на день.",
               "salmon (20%), wheat flour, rice, fish oil", weight=0.06, regular=False),
-        _item("CAT-TREATS-DENTAL", "Дентальні ласощі для котів з тунцем, 60 г", "Ласощі", "cat", 74, "cat-treats",
+        _item("CAT-TREATS-DENTAL", "Дентальні ласощі для котів з тунцем, 60 г", "Ласощі", "cat", 74, "brand-temptations",
               "Пориста текстура механічно очищає зубний наліт під час жування.",
               "tuna (18%), rice, cellulose, minerals", weight=0.06, regular=False),
         # Dogs
@@ -150,16 +155,16 @@ def _special_food() -> list[dict[str, Any]]:
         _item("DOG-SMALL-SALMON", "Сухий корм для собак малих порід з лососем", "Сухий корм", "dog", 499, "dog-dry",
               "Для собак до 10 кг: дрібні гранули та підвищена калорійність для активного обміну речовин.",
               "salmon (28%), rice, peas, salmon oil, minerals", protein=28, fat=17, moisture=10, weight=1.5, kcal=DRY_KCAL),
-        _item("DOG-SENIOR-LAMB", "Сухий корм для собак 7+ з ягнятиною", "Сухий корм", "dog", 819, "dog-dry-mix",
+        _item("DOG-SENIOR-LAMB", "Сухий корм для собак 7+ з ягнятиною", "Сухий корм", "dog", 819, "brand-royal-canin-mini-adult-8",
               "Для літніх собак: помірна калорійність, антиоксиданти та підтримка суглобів.",
               "lamb (24%), rice, barley, flaxseed, minerals", protein=24, fat=11, moisture=10, weight=3.0, kcal=DRY_KCAL),
-        _item("DOG-LIGHT-TURKEY", "Сухий корм Light для собак з надмірною вагою, з індичкою", "Сухий корм", "dog", 799, "dog-dry-light",
+        _item("DOG-LIGHT-TURKEY", "Сухий корм Light для собак з надмірною вагою, з індичкою", "Сухий корм", "dog", 799, "brand-brit-weight-loss",
               "На 25% менше жиру та більше клітковини для відчуття ситості й контролю ваги.",
               "turkey (24%), rice, cellulose, peas, minerals", protein=27, fat=8, moisture=10, weight=3.0, kcal=DRY_KCAL),
         _item("DOG-SENSITIVE-SALMON", "Гіпоалергенний сухий корм для собак з лососем і картоплею", "Сухий корм", "dog", 869, "dog-dry",
               "Одне джерело тваринного білка без злаків — для собак з харчовою чутливістю.",
               "salmon (30%), potato, peas, salmon oil, minerals", protein=26, fat=14, moisture=10, weight=3.0, kcal=DRY_KCAL),
-        _item("DOG-VET-GASTRO", "Лікувальний корм для собак Gastro з куркою", "Лікувальний корм", "dog", 949, "dog-vet-diet",
+        _item("DOG-VET-GASTRO", "Лікувальний корм для собак Gastro з куркою", "Лікувальний корм", "dog", 949, "brand-royal-canin-gastro-dog",
               "Легкозасвоювана дієта для собак із розладами травлення. Застосовуйте за рекомендацією ветеринара.",
               "chicken (22%), rice, beet pulp, fish oil, minerals", protein=25, fat=12, moisture=9, weight=2.0, kcal=DRY_KCAL),
         _item("DOG-VET-RENAL", "Лікувальний корм для собак Renal з ягнятиною", "Лікувальний корм", "dog", 989, "dog-vet-diet",
@@ -177,7 +182,7 @@ def _special_food() -> list[dict[str, Any]]:
         _item("DOG-TREATS-MINI", "Міні-кісточки для собак малих порід з ягнятиною, 200 г", "Ласощі", "dog", 79, "dog-biscuits-2",
               "Маленьке печиво для дрібних порід і цуценят від 3 місяців.",
               "wheat flour, lamb (8%), rice, sunflower oil", weight=0.2, regular=False),
-        _item("DOG-DENTAL-STICKS", "Дентальні палички для собак середніх порід, 7 шт.", "Ласощі", "dog", 149, "dog-chew",
+        _item("DOG-DENTAL-STICKS", "Дентальні палички для собак середніх порід, 7 шт.", "Ласощі", "dog", 149, "brand-brit-dental-stick",
               "Щоденна жувальна паличка зменшує утворення зубного нальоту та освіжає дихання.",
               "rice flour, cellulose, potato starch, minerals", weight=0.18, regular=False),
         # Rabbits

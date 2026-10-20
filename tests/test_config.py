@@ -43,14 +43,15 @@ def test_password_hasher_round_trip_and_rejects_garbage():
 
 def test_store_catalog_covers_species_pharmacy_and_real_photos():
     sys.path.insert(0, str(ROOT / "backend" / "scripts"))
-    from demo_catalog import BRAND, demo_catalog
+    from demo_catalog import BRAND, BRAND_PHOTOS, demo_catalog
 
     rows = demo_catalog()
     assert len(rows) >= 90 and len({row["id"] for row in rows}) == len(rows)
     assert {"cat", "dog", "rabbit", "rodent", "bird", "fish"} <= {row["species"] for row in rows}
     assert sum(row["category"].startswith("Ветаптека") for row in rows) >= 20
     for row in rows:
-        assert row["brand"] == BRAND and row["id"].startswith("PETMIND-DEMO-")
+        image = row["image_url"].rsplit("/", 1)[-1].removesuffix(".jpg")
+        assert row["brand"] == BRAND_PHOTOS.get(image, BRAND) and row["id"].startswith("PETMIND-DEMO-")
         assert "емо" not in row["description"] and row["description"]
         assert (ROOT / "frontend" / "public" / row["image_url"].lstrip("/")).is_file(), row["image_url"]
 
